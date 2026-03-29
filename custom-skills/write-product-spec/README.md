@@ -1,6 +1,6 @@
-# copilot-skills
+# Custom-skills
 
-A collection of custom GitHub Copilot agent skills for VS Code.
+A collection of custom agent skills.
 
 ## What are Skills?
 
