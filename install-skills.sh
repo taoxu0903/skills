@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # install-skills.sh
 # Copies all skills from custom-skills/, other-skills/, and skills/ into the
-# OS global agent skills folder (~/.agent/skills on macOS/Linux,
-# %USERPROFILE%\.agent\skills on Windows via Git Bash/MSYS2/Cygwin).
+# OS global agent skills folder (~/.claude/skills on macOS/Linux,
+# %USERPROFILE%\.claude\skills on Windows via Git Bash/MSYS2/Cygwin).
 
 set -euo pipefail
 
@@ -13,14 +13,14 @@ OS="$(uname -s 2>/dev/null || echo "unknown")"
 
 case "$OS" in
     Darwin*)
-        TARGET_DIR="$HOME/.agent/skills"
+        TARGET_DIR="$HOME/.claude/skills"
         ;;
     Linux*)
-        TARGET_DIR="$HOME/.agent/skills"
+        TARGET_DIR="$HOME/.claude/skills"
         ;;
     MINGW*|MSYS*|CYGWIN*)
         # Git Bash / MSYS2 / Cygwin on Windows
-        TARGET_DIR="${USERPROFILE:-$HOME}/.agent/skills"
+        TARGET_DIR="${USERPROFILE:-$HOME}/.claude/skills"
         # Normalise backslashes to forward slashes for bash
         TARGET_DIR="${TARGET_DIR//\\//}"
         ;;

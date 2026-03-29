@@ -8,12 +8,12 @@
 
 ## Installing All Skills Locally
 
-Run the provided install script to copy all three skill folders into the OS global agent skills directory:
+Run the provided install script to copy all three skill folders into the OS global agent skills directory (note: .agent folder is not well supported by GHCP so far so use .claude for now):
 
 | OS | Target Directory |
 |----|-----------------|
-| macOS / Linux | `~/.agent/skills` |
-| Windows (Git Bash / MSYS2 / Cygwin) | `%USERPROFILE%\.agent\skills` |
+| macOS / Linux | `~/.claude/skills` |
+| Windows (Git Bash / MSYS2 / Cygwin) | `%USERPROFILE%\.claude\skills` |
 
 ```bash
 ./install-skills.sh
