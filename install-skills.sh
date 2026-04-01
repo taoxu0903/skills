@@ -54,6 +54,23 @@ SOURCE_FOLDERS=("custom-skills" "other-skills" "skills")
 copied=0
 skipped=0
 
+# ---------------------------------------------------------------------------
+# Portable recursive copy: prefer rsync (macOS/Linux) and fall back to cp
+# (Git Bash / MSYS2 / Cygwin on Windows where rsync is not always installed).
+# ---------------------------------------------------------------------------
+copy_dir() {
+    local src="$1" dst="$2"
+    if command -v rsync &>/dev/null; then
+        # -a : archive (recursive + preserve permissions/times)
+        # --links          : copy symlinks as symlinks
+        # --ignore-errors  : skip unreadable files instead of aborting
+        rsync -a --links --ignore-errors "$src/" "$dst/"
+    else
+        # cp fallback — works on Git Bash / MSYS2 / Cygwin without rsync
+        cp -r "$src/." "$dst/"
+    fi
+}
+
 for folder in "${SOURCE_FOLDERS[@]}"; do
     src="$SCRIPT_DIR/$folder"
 
@@ -64,11 +81,7 @@ for folder in "${SOURCE_FOLDERS[@]}"; do
     fi
 
     echo "  [COPY] $folder/ -> $TARGET_DIR/"
-    # rsync is available by default on macOS and most Linux distros.
-    # -a           : archive mode (recursive, preserve permissions/times)
-    # --links      : copy symlinks as symlinks rather than following them
-    # --ignore-errors : skip broken symlinks / unreadable files instead of aborting
-    rsync -a --links --ignore-errors "$src/" "$TARGET_DIR/"
+    copy_dir "$src" "$TARGET_DIR"
     (( copied++ )) || true
 done
 

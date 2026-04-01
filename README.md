@@ -13,12 +13,46 @@ Run the provided install script to copy all three skill folders into the OS glob
 | OS | Target Directory |
 |----|-----------------|
 | macOS / Linux | `~/.claude/skills` |
-| Windows (Git Bash / MSYS2 / Cygwin) | `%USERPROFILE%\.claude\skills` |
+| Windows | `%USERPROFILE%\.claude\skills` |
+
+### macOS / Linux
+
+`rsync` is pre-installed. Open a terminal in the repo root and run:
 
 ```bash
 ./install-skills.sh
 ```
 
-The script requires `rsync` (pre-installed on macOS and most Linux distributions). On Windows, run it from Git Bash.
+If you get a permission error, make the script executable first:
+
+```bash
+chmod +x install-skills.sh
+./install-skills.sh
+```
+
+### Windows
+
+The script requires a Bash environment. Use one of the following options:
+
+**Option 1 — Git Bash** (recommended, ships with [Git for Windows](https://git-scm.com/download/win)):
+
+1. Open **Git Bash** in the repo root (right-click the folder → *Git Bash Here*).
+2. Run:
+
+```bash
+./install-skills.sh
+```
+
+**Option 2 — WSL (Windows Subsystem for Linux)**:
+
+1. Open a WSL terminal and navigate to the repo root (e.g. `/mnt/c/Users/<you>/Downloads/git/skills`).
+2. Install `rsync` if needed: `sudo apt install rsync`
+3. Run:
+
+```bash
+./install-skills.sh
+```
+
+> **Note:** After running on Windows, skills are installed to `%USERPROFILE%\.claude\skills` (e.g. `C:\Users\<you>\.claude\skills`).
 
 ---
