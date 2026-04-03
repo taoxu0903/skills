@@ -1,0 +1,20 @@
+{
+  "skill_name": "agent-product-tracker",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "what's the latest with all the AI coding agents? give me a roundup",
+      "expected_output": "A structured summary covering all 5 products (OpenClaw, GitHub Copilot, Claude Code, Codex, Cursor) with recent updates, dates, and source links"
+    },
+    {
+      "id": 2,
+      "prompt": "any recent cursor updates?",
+      "expected_output": "A focused summary covering only Cursor, with recent updates, dates, and source links"
+    },
+    {
+      "id": 3,
+      "prompt": "/agent-product-tracker claude code,copilot",
+      "expected_output": "A summary covering only Claude Code and GitHub Copilot, with recent updates, dates, and source links"
+    }
+  ]
+}
