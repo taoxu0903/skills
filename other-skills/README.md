@@ -7,3 +7,4 @@ Popular skills downloaded from third-party sources.
 | [agent-browser](./agent-browser/) | https://skills.sh/ |
 | [find-skills](./find-skills/) | https://skills.sh/ |
 | [html-slides](./html-slides/) | https://github.com/bluedusk/html-slides |
+| [tavily-search](./tavily-search/) | https://skills.sh/ with tiny tuning to fix the installation of tvly CLI|
