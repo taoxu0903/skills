@@ -62,6 +62,63 @@ Apply the same filtering and table format as defaults.
 
 ## Roundup Mode
 
+### Pre-flight: Check `TAVILY_API_KEY`
+
+**Before doing ANYTHING else** (including Step 0 clarification questions), check if `TAVILY_API_KEY` is set by running `echo $TAVILY_API_KEY`.
+
+- If it's set (non-empty), proceed to Step 0.
+- If it's **empty or not set**, **stop immediately**. Do NOT ask clarification questions, do NOT fetch any sources. Display the following message and wait for the user to fix it:
+
+  > **`TAVILY_API_KEY` is not set.** This skill depends on Tavily for web search enrichment and cannot run without it.
+  >
+  > Get your key at https://tavily.com (free tier available), then set it:
+  >
+  > **macOS / Linux** — add to your shell profile (`~/.zshrc`, `~/.bashrc`, etc.):
+  > ```bash
+  > export TAVILY_API_KEY="your-key-here"
+  > ```
+  > Then restart your terminal or run `source ~/.zshrc` (or `~/.bashrc`).
+  >
+  > **Windows (PowerShell)**:
+  > ```powershell
+  > [Environment]::SetEnvironmentVariable("TAVILY_API_KEY", "your-key-here", "User")
+  > ```
+  > Then restart your terminal.
+  >
+  > **Windows (CMD)**:
+  > ```cmd
+  > setx TAVILY_API_KEY "your-key-here"
+  > ```
+  > Then restart your terminal.
+  >
+  > Once set, re-run `/ai-tracker`.
+
+---
+
+### Step 0: Clarify Before Executing
+
+**Before doing ANY fetching or research**, confirm the execution plan with the user by asking clarification questions. Parse the user's prompt and present a summary of what you understood, then ask for confirmation or corrections. Use the AskUserQuestion tool with the following questions as applicable:
+
+1. **Scope** — What products/models to check:
+   - If the user said nothing specific: confirm "I'll check all default agents and models — is that right, or do you want to narrow it down?"
+   - If the user named specific items: confirm the list — "I'll check: [list]. Anything to add or remove?"
+   - If ambiguous (e.g., "check on the latest stuff"): ask what they want covered.
+
+2. **Time period** — What window to cover:
+   - Ask: "What time period should I cover?" with options like "This week (last 7 days)" (default), "Yesterday", "Last 2 weeks", "This month".
+
+3. **Any other clarifications** — Only if genuinely ambiguous:
+   - Custom products the user mentioned that you're unsure about (e.g., "By 'Windsurf', do you mean the Codeium editor?")
+   - Whether they want agents only, models only, or both when the prompt is unclear.
+
+**Rules for this step:**
+- Do NOT skip this step. Always confirm the plan before executing.
+- Keep it lightweight — 1-3 questions max, not an interrogation.
+- If the user's request is very explicit (e.g., "/ai-tracker cursor,gpt --this-week"), you still confirm but can combine everything into a single concise confirmation question.
+- Once the user confirms (or adjusts), proceed to fetching. Do not re-ask.
+
+---
+
 ### Handling Arguments
 
 - **No arguments**: Check all default agents AND all default models.
@@ -73,19 +130,14 @@ Apply the same filtering and table format as defaults.
 
 ### Time Period
 
-Before fetching, ask the user what period to cover:
-
-> **What time period should I cover?** (default: this week)
-> Examples: "this week", "yesterday", "last 2 days", "this month", "last 2 weeks"
-
-Default to **this week** (last 7 days). Use the answer to:
+Use the time period confirmed in Step 0. Default to **this week** (last 7 days) if the user accepted the default. Use the answer to:
 1. **Filter results** to the specified period.
 2. **Scope Tavily** — map to `--time-range` (day/week/month).
 3. **Set the report header** — e.g., "AI Updates — This Week (Mar 28 – Apr 3, 2026)"
 
 If a product/model has no updates in the period, say so. Don't backfill.
 
-### How to Fetch Updates
+### How to Fetch Updates (after Step 0 confirmation)
 
 #### Step 1: Fetch official sources (all in parallel)
 
@@ -131,7 +183,30 @@ Actively filter — a release with 20 items might only have 2-3 that matter.
 
 ### Enriching Each Change with "Why It Matters"
 
-For every notable item in a roundup, explain **why it was added and what problem it solves** — this is what makes the skill valuable beyond just reading changelogs. Draw from The Batch, Tavily results, and your own reasoning. If you can't find external context, infer the rationale from the feature itself (e.g., "MCP payload limit raised to 500K → previously, large payloads like database schemas were truncated, forcing users to chunk data manually").
+For every notable item in a roundup, the "Why It Matters" column must go beyond a simple restatement of the feature. It should include **two layers**:
+
+1. **What problem it solves** — the rationale, impact, or strategic context.
+2. **A concrete user scenario** — a brief, realistic before/after or "imagine this" example showing how a practitioner's workflow changes.
+
+This is what makes the skill valuable beyond just reading changelogs. Draw from The Batch, Tavily results, and your own reasoning. If you can't find external context, infer the rationale and scenario from the feature itself.
+
+**Example of a good "Why It Matters" entry:**
+
+> **MCP payload limit raised to 500K** (Apr 2)
+> Previously, large payloads like database schemas were truncated, forcing users to chunk data manually. *Scenario: You ask Claude Code to "analyze my Postgres schema" — before, the 300K DDL dump was silently cut off and the agent gave incomplete advice. Now the full schema passes through in one shot.*
+
+**Example of a bad "Why It Matters" entry (don't do this):**
+
+> **MCP payload limit raised to 500K** (Apr 2)
+> The payload limit was increased from 100K to 500K.
+
+**Guidelines for scenarios:**
+- Keep them to 1-2 sentences — vivid but concise.
+- Use second person ("you") to make it relatable.
+- Show the before/after contrast or the concrete situation the feature handles.
+- For security features: describe the attack or risk scenario it prevents.
+- For breaking changes: describe what breaks and what the user must do.
+- Not every row needs an elaborate scenario — minor items can have a shorter "Why It Matters." Reserve the richest scenarios for the 2-3 most significant changes per product.
 
 ### Roundup Output Format
 
@@ -147,8 +222,8 @@ For every notable item in a roundup, explain **why it was added and what problem
 
 | Change | Why It Matters |
 |--------|---------------|
-| **[Feature]** (date) | [Impact / rationale] |
-| ⚠️ **Breaking**: [desc] | [What users need to do] |
+| **[Feature]** (date) | [Impact / rationale]. *Scenario: [1-2 sentence concrete user example]* |
+| ⚠️ **Breaking**: [desc] | [What breaks]. *Scenario: [what user must do and what happens if they don't]* |
 
 Sources: [Official Changelog](url)
 
@@ -161,8 +236,8 @@ Sources: [Official Changelog](url)
 
 | Change | Why It Matters |
 |--------|---------------|
-| **[New model/version]** (date) | [Capability / benchmark / use case] |
-| ⚠️ **Deprecation**: [old model] | [Timeline and migration] |
+| **[New model/version]** (date) | [Capability / benchmark / use case]. *Scenario: [1-2 sentence concrete user example]* |
+| ⚠️ **Deprecation**: [old model] | [Timeline and migration]. *Scenario: [what breaks for users still on the old model]* |
 
 Sources: [Official Page](url)
 

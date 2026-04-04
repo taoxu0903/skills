@@ -1,0 +1,23 @@
+{
+  "skill_name": "competitor-analysis",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm a PM at a project management tool company. Can you do a competitive analysis of Asana, Monday.com, and ClickUp? I want to understand their current product positioning and any major features they've shipped. Let's just run it with Claude for now — option A.",
+      "expected_output": "Should trigger Phase 1 clarification (ask about dimensions, period), then present a research plan, then execute Phase 2A internally. Should produce a well-structured claude-report markdown file in ./competitor-analysis/ with executive summary, competitor deep dives, comparative matrix, and strategic implications. Sources should be cited.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Run a competitor analysis on Figma, Sketch, and Adobe XD — but only for the last 30 days. I want to know what's new. Let's delegate this one to ChatGPT deep research.",
+      "expected_output": "Should trigger Phase 1 clarification (confirm dimensions, confirm time period as last 30 days), then present research plan, then execute Phase 2B. Should generate a well-crafted deep research prompt from the template, attempt browser automation to ChatGPT, and save the prompt to a file. Should handle graceful fallback if browser automation fails.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I have two competitor reports already — one from Claude and one from ChatGPT — about Notion, Coda, and Roam Research. Can you synthesize them into a consolidated report?",
+      "expected_output": "Should trigger Phase 3 synthesis. Should look for existing reports in ./competitor-analysis/, read both, create a consolidated markdown report with cross-referenced findings, confidence levels, source attribution ([Claude]/[ChatGPT]/[Both]), and then generate executive summary HTML slides.",
+      "files": []
+    }
+  ]
+}
