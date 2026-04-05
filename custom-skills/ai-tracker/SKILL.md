@@ -1,16 +1,22 @@
 ---
 name: ai-tracker
 description: >
-  Your go-to skill for periodic roundups on AI coding agents and AI models. Default agents:
-  OpenClaw, GitHub Copilot, Claude Code, Codex, Cursor, Gemini CLI. Default models: GPT, Claude,
-  Gemini. Use this skill whenever the user:
-  (1) asks for update roundups ("what's new with coding agents", "any model releases this week",
-  "what's new about Claude Code");
-  (2) asks "what's new" or "what changed" about any tracked product by name;
+  Your go-to skill for anything about what's new, changed, or updated with AI coding agents
+  and AI models. Default agents: OpenClaw, GitHub Copilot, Claude Code, Codex, Cursor, Gemini CLI.
+  Default models: GPT, Claude, Gemini. Use this skill whenever the user:
+  (1) asks what's new, what changed, any updates, latest changes, or recent news about ANY
+  coding agent or AI model — whether by name or generally (e.g., "what's new about Claude Code",
+  "any updates on Cursor", "latest changes to Copilot", "anything new with Codex",
+  "what changed in Gemini CLI", "recent Claude Code updates", "what's new in last 2 days");
+  (2) asks for update roundups, summaries, or overviews across agents or models
+  ("what's the latest with coding agents", "any model releases this week", "give me a roundup");
   (3) asks about recent AI dev tool trends, ecosystem changes, or industry moves.
-  This skill focuses on revealing new changes — features, releases, pricing, deprecations.
-  For specific questions about a product (e.g., "does Cursor support X?", "what's Claude's
-  context window?"), do NOT use this skill — answer directly using tavily-search or other tools.
+  IMPORTANT: This skill should trigger for ANY prompt asking about new/recent/latest/changed
+  information for a tracked product, even casual or brief questions. It covers the full spectrum
+  from "what's new about X" to formal multi-product roundups.
+  For specific factual questions about a product's current capabilities (e.g., "does Cursor
+  support X?", "what's Claude's context window?"), do NOT use this skill — answer directly
+  using tavily-search or other tools.
 allowed-tools: Skill(tavily-search)
 ---
 

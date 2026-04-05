@@ -1,10 +1,10 @@
 {
-  "skill_name": "agent-product-tracker",
+  "skill_name": "ai-tracker",
   "evals": [
     {
       "id": 1,
       "prompt": "what's the latest with all the AI coding agents? give me a roundup",
-      "expected_output": "A structured summary covering all 5 products (OpenClaw, GitHub Copilot, Claude Code, Codex, Cursor) with recent updates, dates, and source links"
+      "expected_output": "A structured summary covering all default agents (OpenClaw, GitHub Copilot, Claude Code, Codex, Cursor, Gemini CLI) with recent updates, dates, and source links"
     },
     {
       "id": 2,
@@ -13,8 +13,28 @@
     },
     {
       "id": 3,
-      "prompt": "/agent-product-tracker claude code,copilot",
+      "prompt": "/ai-tracker claude code,copilot",
       "expected_output": "A summary covering only Claude Code and GitHub Copilot, with recent updates, dates, and source links"
+    },
+    {
+      "id": 4,
+      "prompt": "what's new about claude code in last 2 days",
+      "expected_output": "A focused summary covering only Claude Code, filtered to the last 2 days, with recent updates, dates, and source links"
+    },
+    {
+      "id": 5,
+      "prompt": "any changes to gemini cli recently?",
+      "expected_output": "A focused summary covering only Gemini CLI, with recent updates, dates, and source links"
+    },
+    {
+      "id": 6,
+      "prompt": "latest codex updates",
+      "expected_output": "A focused summary covering only Codex, with recent updates, dates, and source links"
+    },
+    {
+      "id": 7,
+      "prompt": "what changed with GPT models this week?",
+      "expected_output": "A focused summary covering only GPT models, filtered to this week, with recent updates, dates, and source links"
     }
   ]
 }
