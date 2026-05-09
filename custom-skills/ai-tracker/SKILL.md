@@ -17,7 +17,6 @@ description: >
   For specific factual questions about a product's current capabilities (e.g., "does Cursor
   support X?", "what's Claude's context window?"), do NOT use this skill — answer directly
   using tavily-search or other tools.
-allowed-tools: Skill(tavily-search)
 ---
 
 # AI Tracker
@@ -56,11 +55,7 @@ Users can request additional agents or models beyond the defaults. Examples:
 - "include Llama and Mistral" → add as custom models
 - "/ai-tracker cursor,gpt,llama" → Cursor (default) + GPT (default) + Llama (custom via Tavily)
 
-For custom additions without a known official URL, use the **tavily-search** skill:
-
-Invoke the `tavily-search` skill with query: `[product/model name] release OR update OR announcement 2026`
-
-The tavily-search skill handles CLI installation, authentication, and execution. Do not call `tvly` directly.
+For custom additions without a known official URL, search the web using your standard search tool with a query like: `[product/model name] release OR update OR announcement <year>`.
 
 Apply the same filtering and table format as defaults.
 
@@ -68,36 +63,9 @@ Apply the same filtering and table format as defaults.
 
 ## Roundup Mode
 
-### Pre-flight: Check `TAVILY_API_KEY`
+### Pre-flight: nothing to set up
 
-**Before doing ANYTHING else** (including Step 0 clarification questions), check if `TAVILY_API_KEY` is set by running `echo $TAVILY_API_KEY`.
-
-- If it's set (non-empty), proceed to Step 0.
-- If it's **empty or not set**, **stop immediately**. Do NOT ask clarification questions, do NOT fetch any sources. Display the following message and wait for the user to fix it:
-
-  > **`TAVILY_API_KEY` is not set.** This skill depends on Tavily for web search enrichment and cannot run without it.
-  >
-  > Get your key at https://tavily.com (free tier available), then set it:
-  >
-  > **macOS / Linux** — add to your shell profile (`~/.zshrc`, `~/.bashrc`, etc.):
-  > ```bash
-  > export TAVILY_API_KEY="your-key-here"
-  > ```
-  > Then restart your terminal or run `source ~/.zshrc` (or `~/.bashrc`).
-  >
-  > **Windows (PowerShell)**:
-  > ```powershell
-  > [Environment]::SetEnvironmentVariable("TAVILY_API_KEY", "your-key-here", "User")
-  > ```
-  > Then restart your terminal.
-  >
-  > **Windows (CMD)**:
-  > ```cmd
-  > setx TAVILY_API_KEY "your-key-here"
-  > ```
-  > Then restart your terminal.
-  >
-  > Once set, re-run `/ai-tracker`.
+Web search is handled by the global tooling — proceed directly to Step 0.
 
 ---
 
@@ -162,18 +130,16 @@ URL: https://www.deeplearning.ai/the-batch/tag/data-points/
 Prompt: "List all recent articles covering AI coding agents, AI models, GPT, Claude, Gemini, GitHub Copilot, Claude Code, Cursor, Codex, Gemini CLI, or OpenClaw. Include dates, titles, and key takeaways."
 ```
 
-#### Step 3: Tavily Search for context, custom items, and rationale
+#### Step 3: Web search for context, custom items, and rationale
 
-Use the **tavily-search** skill to:
+Use web search to:
 1. **Enrich default items** — blog posts, rationale, user reactions
 2. **Fetch custom items** — agents/models not in defaults
 3. **Get comparison context** — analyst commentary
 
-Invoke the `tavily-search` skill with queries like:
-- `"[product/model] [feature] why rationale blog 2026"` (enrichment)
-- `"[custom name] AI release OR update 2026"` (custom items)
-
-**Fallback**: If the tavily-search skill fails to return usable results, fall back to WebFetch + WebSearch. Do not silently skip — always attempt Tavily first.
+Useful query shapes:
+- `"[product/model] [feature] why rationale blog <year>"` (enrichment)
+- `"[custom name] AI release OR update <year>"` (custom items)
 
 #### Handling fetch failures
 

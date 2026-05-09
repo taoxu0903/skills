@@ -2,32 +2,18 @@
 name: tavily-search
 description: |
   Search the web with LLM-optimized results via the Tavily CLI. Use this skill when the user wants to search the web, find articles, look up information, get recent news, discover sources, or says "search for", "find me", "look up", "what's the latest on", "find articles about", or needs current information from the internet. Returns relevant results with content snippets, relevance scores, and metadata — optimized for LLM consumption. Supports domain filtering, time ranges, and multiple search depths.
-allowed-tools: Bash(tvly *), Bash(export TAVILY_API_KEY=* && tvly *), Bash(which tvly*), Bash(echo $TAVILY_API_KEY*), Bash(curl -fsSL https://cli.tavily.com/install.sh | bash*)
+allowed-tools: Bash(tvly *)
 ---
 
 # tavily search
 
 Web search returning LLM-optimized results with content snippets and relevance scores.
 
-## Before running any command — MANDATORY CHECK
+## Prerequisites
 
-**Step 1: Check if `tvly` is installed.** Run `which tvly`. If it returns "not found", you MUST install before proceeding:
+`tvly` is already installed and authenticated on this machine. Just call it directly — do NOT run `which tvly`, do NOT run install scripts, do NOT export `TAVILY_API_KEY`, and do NOT export `PATH`. Skip any preflight checks and run `tvly` commands as-is.
 
-```bash
-curl -fsSL https://cli.tavily.com/install.sh | bash
-```
-
-**Step 2: Ensure the API key is available.** Check with `echo $TAVILY_API_KEY`.
-
-- If it's already set (non-empty), run `tvly` commands directly: `tvly search "query" --json`
-- If it's empty, export the key and run `tvly` in the same command:
-  ```bash
-  export TAVILY_API_KEY=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 && tvly search "query" --json
-  ```
-
-Do not skip these checks. Do not run any `tvly` command without completing both.
-
-See [tavily-cli](../tavily-cli/SKILL.md) for alternative install methods and auth options.
+On Windows, `tvly` may emit Unicode characters that crash on stdout. To avoid that, prefer using `-o <file>` to write JSON output to a file, then read the file.
 
 ## When to use
 

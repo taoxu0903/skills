@@ -13,22 +13,24 @@ OS="$(uname -s 2>/dev/null || echo "unknown")"
 
 case "$OS" in
     Darwin*)
-        TARGET_DIR="$HOME/.claude/skills"
+        CLAUDE_DIR="$HOME/.claude"
         ;;
     Linux*)
-        TARGET_DIR="$HOME/.claude/skills"
+        CLAUDE_DIR="$HOME/.claude"
         ;;
     MINGW*|MSYS*|CYGWIN*)
         # Git Bash / MSYS2 / Cygwin on Windows
-        TARGET_DIR="${USERPROFILE:-$HOME}/.claude/skills"
+        CLAUDE_DIR="${USERPROFILE:-$HOME}/.claude"
         # Normalise backslashes to forward slashes for bash
-        TARGET_DIR="${TARGET_DIR//\\//}"
+        CLAUDE_DIR="${CLAUDE_DIR//\\//}"
         ;;
     *)
         echo "ERROR: Unsupported OS '$OS'. Exiting." >&2
         exit 1
         ;;
 esac
+
+TARGET_DIR="$CLAUDE_DIR/skills"
 
 # ---------------------------------------------------------------------------
 # Resolve the directory that contains this script (source root)
@@ -88,3 +90,17 @@ done
 echo ""
 echo "Done. Copied $copied folder(s), skipped $skipped folder(s)."
 echo "Skills are now available at: $TARGET_DIR"
+
+# ---------------------------------------------------------------------------
+# Copy CLAUDE.md (global instructions) into $CLAUDE_DIR
+# ---------------------------------------------------------------------------
+if [ -f "$SCRIPT_DIR/CLAUDE.md" ]; then
+    echo ""
+    echo "  [COPY] CLAUDE.md -> $CLAUDE_DIR/CLAUDE.md"
+    mkdir -p "$CLAUDE_DIR"
+    cp "$SCRIPT_DIR/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
+    echo "Global instructions installed at: $CLAUDE_DIR/CLAUDE.md"
+else
+    echo ""
+    echo "  [SKIP] CLAUDE.md not found in source root — skipping."
+fi
