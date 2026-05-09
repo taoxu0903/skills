@@ -44,7 +44,7 @@ Two categories: **Coding Agents** and **Models**.
 
 | Model Family | Aliases | Provider | Official URL |
 |-------------|---------|----------|-------------|
-| GPT | "gpt", "openai models", "o1", "o3", "gpt-5" | OpenAI | `https://releasebot.io/updates/openai/openai-models` |
+| GPT | "gpt", "openai models", "o1", "o3", "gpt-5" | OpenAI | `https://help.openai.com/en/articles/9624314-model-release-notes` (primary) + `https://developers.openai.com/api/docs/changelog` (API changes) |
 | Claude | "claude models", "sonnet", "opus", "haiku" | Anthropic | `https://releasebot.io/updates/anthropic/claude` |
 | Gemini | "gemini models", "gemini pro", "gemini flash" | Google | `https://releasebot.io/updates/google/gemini` |
 
@@ -120,6 +120,30 @@ Use **WebFetch** for every default agent and model being checked. Run all fetche
 Prompt for agents: "List the most recent releases and announcements with dates, version numbers, and new features. Focus on new features and significant releases only — skip bug fixes and minor improvements."
 
 Prompt for models: "List the most recent model releases, version updates, benchmarks, API changes, context window changes, pricing changes, and deprecations. Include dates and version identifiers."
+
+##### IMPORTANT: GitHub Releases sources need `gh api`, not WebFetch
+
+WebFetch on a GitHub `/releases` page only returns the first page (~10 most recent items), so any release older than ~5 days disappears for active projects like `openclaw/openclaw` and `google-gemini/gemini-cli`. **For any source URL ending in `/releases`, do NOT use WebFetch — use the GitHub REST API via `gh` CLI**:
+
+```bash
+# Get up to 100 most recent releases (handles ~3 weeks of activity for fast-moving repos)
+gh api "repos/<owner>/<repo>/releases?per_page=100" \
+  --jq '[.[] | {name, tag_name, published_at, prerelease, body}] | .[] | select(.published_at >= "<YYYY-MM-DD>T00:00:00Z")'
+```
+
+Examples:
+- OpenClaw: `gh api "repos/openclaw/openclaw/releases?per_page=100" --jq '...'`
+- Gemini CLI: `gh api "repos/google-gemini/gemini-cli/releases?per_page=100" --jq '...'`
+
+If `per_page=100` still doesn't reach back far enough (very active repos), paginate with `--paginate` or fetch additional `&page=2`, `&page=3`. The `body` field contains the full release notes — you can grep it for features.
+
+##### IMPORTANT: OpenAI model releases — multi-source, not releasebot
+
+The `releasebot.io` mirror is frequently weeks stale. For OpenAI models, **always fetch BOTH**:
+1. `https://help.openai.com/en/articles/9624314-model-release-notes` — model release notes (primary)
+2. `https://developers.openai.com/api/docs/changelog` — API changelog (catches API-level model changes, deprecations)
+
+Cross-check with The Batch (Step 2) and any GHCP changelog entries naming OpenAI models — those announcements are often the earliest public confirmation that a new model has GA'd.
 
 #### Step 2: Fetch the neutral industry source
 
