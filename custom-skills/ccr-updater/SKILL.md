@@ -31,7 +31,7 @@ Report the installed version after completion. If already at the latest, say so.
 
 ## Step 3: Check GHCP's latest Claude versions and update CCR config
 
-This is the most important step. The goal is to find the latest Claude Sonnet and Claude Opus model versions available on GitHub Copilot, then update the routing config so CCR uses them.
+This is the most important step. The goal is to find the latest Claude Sonnet and Claude Opus model versions available on GitHub Copilot, then update the routing config so CCR uses them. 
 
 ### 3a: Research latest GHCP Claude models
 
