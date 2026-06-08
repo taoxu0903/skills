@@ -1,6 +1,6 @@
 ---
 name: deep-research
-description: "Composable product/market/concept research for PMs — assemble lenses (concept, discovery, teardown, compare, forms, trends, strategy) to fit any research question, with human checkpoints and an evidence-graded output."
+description: "Composable product/market/concept research for PMs — assemble lenses (concept, discovery, teardown, forms, compare, trends) to fit any research question, with human checkpoints and an evidence-graded output."
 triggers:
   - user asks to research a product, market, or concept
   - user asks for competitive analysis or competitor comparison
@@ -24,17 +24,78 @@ up and how heavy each one is*.
 
 ---
 
-## The 7 Lenses (single responsibility each — do not overlap them)
+## The 6 Lenses (single responsibility each — do not overlap them)
+
+Two stages: **understand each object** (Concept, Discovery, Teardown), then **synthesize across
+them** (Forms and Compare are sibling synthesis steps — both run AFTER Teardown). Trends
+reads the time axis on top.
 
 | Lens | The one question it answers | Object count | Output shape |
 |---|---|---|---|
 | 🔍 **Concept** | "What does this term/idea *mean*?" | 1 abstract idea | definition + boundary + relation to neighbors |
 | 🧭 **Discovery** | "Who/what should I even study?" | unknown → set | a deduped, classified candidate list |
-| 🗺️ **Pattern→Forms** | "What product *forms* does this pattern take?" | a set | clustering along a FORM axis, not a vendor list |
 | 🔬 **Teardown** | "How does this single object work inside?" | 1 concrete thing | deep analysis (depth/width tunable) |
+| 🗺️ **Forms** | "What product *forms* does this set fall into?" | analyzed set | clustering along a FORM axis, not a vendor list |
 | ⚖️ **Compare** | "How do these differ; who's stronger?" | 2+ analyzed objects | matrix + positioning conclusion |
 | 📈 **Trends** | "How is this evolving over time?" | a field | 5–7 named, argued trajectories |
-| 🎯 **Strategy** | "So what — for MY product?" | — | defensible wedge + concrete bets |
+
+> **Forms and Compare are the two synthesis siblings.** Both consume Teardown results;
+> neither runs before Teardown. Compare lays objects against a dimension axis (who's stronger);
+> Forms clusters the analyzed set along a form axis (what shapes exist). A flow uses one,
+> the other, or neither — rarely both.
+
+### Design invariants (deliberately chosen — do NOT "fix" these back)
+
+These are settled decisions from the design of this skill. Each looks like something a future
+editor might "improve" by reverting. Do not. If you think one is wrong, raise it with the user
+first — they made these calls on purpose.
+
+1. **Teardown precedes BOTH synthesis steps.** Forms and Compare are siblings that BOTH
+   run after Teardown. Reason: you can only name genuine market forms / score real differences
+   after you understand how each player works. Clustering or comparing first = armchair
+   categories. Never move Forms (or Compare) above Teardown.
+2. **The object list is an OUTPUT, never an input.** When the target set is unknown, Discovery
+   produces it and the user ratifies it. Never pre-seed the deliverable with a vendor list you
+   assumed.
+3. **Lenses have single, non-overlapping responsibilities.** Teardown = deep-analyze ONE object
+   (depth tunable). Compare = arrange Teardown RESULTS (never collects raw data, never
+   deep-dives one object). "Directed profiling of each competitor" is not a new lens — it is
+   `Teardown(dimensions=limited, depth=shallow)`. Don't split it out.
+4. **Composability over templates.** This is building blocks you assemble per question, NOT three
+   fixed modes (landscape/targeted/deep-dive). An earlier draft used fixed modes; it was rejected
+   because the research target — and even whether a product exists at all — changes every time.
+   Step A's whole job is choosing which blocks light up. Don't collapse it back into named modes.
+
+Regression oracle for all of the above: `references/test-cases.md` (four real user requests with
+expected flows + MUST/MUST-NOT). Re-check it after any structural edit.
+
+### Editing this skill safely (this file is iterated often — read before you edit)
+
+This is a multi-file skill (`SKILL.md` + `references/test-cases.md` + `references/discovery-search-tooling.md`)
+with numbered invariants that other sections cross-reference. Edits here have a habit of leaving
+silent breakage. Four hazards earned the hard way:
+
+1. **Patch against a RAW file read, never against `skill_view` output.** This file is large
+   (~28KB). `skill_view` can return an LLM-SUMMARIZED version that silently drops whole items
+   (it once dropped an entire invariant). If you patch against the summary you'll target text
+   that differs from disk and either fail to match or corrupt the file. Read the actual file
+   first, copy the exact `old_string` from it.
+2. **Deleting or reordering a numbered invariant breaks every `(invariant #N)` cross-reference.**
+   Those references are scattered across the Compare lens, the Pitfalls list, AND
+   `references/test-cases.md` (MUST/MUST-NOT lines + the coverage-map row). After any
+   add/delete/reorder of the invariant list: renumber the list, re-point every `(invariant #N)`
+   citation to the new target, then grep the whole skill dir for `invariant #` / stray `#N` and
+   confirm zero stale hits. Renumbering silently mis-points citations — the file still "looks fine."
+3. **Before deleting a rule, separate behavior-removal from label-demotion — they diverge sharply.**
+   "Remove invariant X" can mean *(a)* reverse the behavior (the skill may now do X) → delete the
+   rule AND its downstream guards/pitfalls/test-cases, or *(b)* just demote it from the invariant
+   list while keeping the behavior → delete the list item and the `(invariant #N)` labels but KEEP
+   the rule everywhere it's enforced. Confirm which before touching anything; the two produce
+   different skills.
+4. **A global rename must verify to ZERO across every `references/` file, not just SKILL.md.**
+   Finishing the rename in SKILL.md feels done, but stragglers hide in test-cases.md (flow lines,
+   MUST bullets, regression sentinels, coverage-map rows). After any rename, grep the whole skill
+   directory for the old token and confirm 0 matches before declaring done.
 
 ### Memory anchors for the 3 lenses that blur together
 - **Concept** plots the **point** on a map (what it means, where it sits).
@@ -53,9 +114,9 @@ up and how heavy each one is*.
 
 ---
 
-## The 3 Human Checkpoints (stop and get user ratification)
+## The 4 Human Checkpoints (stop and get user ratification)
 
-Three things must be ratified by the user. **Checkpoints 2 and 3 are presented TOGETHER**, in one
+Four things must be ratified by the user. **Checkpoints 2 and 3 are presented TOGETHER**, in one
 review right after Discovery — so the comparison dimensions are always confirmed before Teardown.
 
 1. **After Step A — the plan.** Which lenses you'll light up and how heavy. User confirms/adjusts.
@@ -65,6 +126,10 @@ review right after Discovery — so the comparison dimensions are always confirm
    *what* to compare on. User edits/finalizes. Presented in the SAME review as checkpoint 2:
    prune/add the tools and finalize the dimensions in one pass. **Locked here, before Teardown** —
    never after, because Teardown is filled against these exact dimensions.
+4. **After Persist — the self-review gap list.** Read the finished report back against this skill's
+   Quality Contract and Pitfalls, hand the user a followed/deviated gap list, and let them choose
+   which structural gaps to fix. Details in *Self-review against this skill* near the end. Clear-cut
+   errors you fix without asking; structural changes wait for the user's call.
 
 > Why bundle rows and columns: the dimension axis drives BOTH downstream lenses — for Teardown it
 > defines *what to collect per object*; for Compare it defines *what to lay side by side*. Confirming
@@ -88,15 +153,15 @@ Read the request and answer three things, then show the user a one-paragraph pla
    - an *abstract concept* (no product) → Concept-led
    - an *unfamiliar single product/system* → Teardown-led
    - a *known object vs a known object* → Teardown(s) → Compare
-   - a *capability/pattern* ("how is X productized") → Discovery → Pattern→Forms
-   - a *capability domain* ("who does X") → Discovery → Compare
+   - a *capability/pattern* ("how is X productized") → Discovery → Teardown → Forms
+   - a *capability domain* ("who does X") → Discovery → Teardown → Compare
 2. **Is the object set known?** If no → Discovery is required. If yes → skip Discovery.
 3. **Which lenses, how heavy?** (● heavy / ○ light / — none)
 
 Example plan reply (for "what is MDASH and how does it differ from Evergreen"):
 > Subject: one unfamiliar product (MDASH) + one known object (Evergreen). Objects are
-> already fixed → no Discovery. Plan: Teardown MDASH (full) → Compare the two → Strategy
-> for Evergreen's positioning. Proceed?
+> already fixed → no Discovery. Plan: Teardown MDASH (full) → Compare the two on a confirmed
+> dimension axis. Stops at the objective comparison — no strategy section. Proceed?
 
 ---
 
@@ -116,11 +181,16 @@ Compare aligned.
 | **Teardown** (per tool) | locked tools + locked dimensions | one prose profile per tool (fills the dimensions) + a dated last-3-months feature list | — |
 | **Compare** | all teardown profiles | §1 table + plain summary · §2 recent-3-month trend summary | — |
 | **Trends** (optional) | the field + Compare output | 5–7 named market trajectories | — |
-| **Strategy** | everything above | the defensible wedge + 3 near-term / 2 long-term bets | — |
 | **Persist** | the finished report | two files in the research folder | ⛳ approval before writing |
+| **Self-review** | the persisted report + this skill | a gap list (followed / deviated), then fixes | ⛳ 4 — user reviews gaps before you fix |
 
 Lighter flows drop steps (a single-product teardown skips Discovery), but the input→output
 contract per step never changes. Step A decides which rows of this table light up.
+
+> Note: this table shows the **Compare** branch (`… → Teardown → Compare → Trends`). A
+> **Forms** branch swaps the Compare row for a Forms row (cluster the analyzed
+> set along a form axis instead of laying it against a dimension matrix). Both branches share the
+> upstream `Discovery → Teardown` spine; they differ only in the synthesis step.
 
 ---
 
@@ -166,6 +236,15 @@ architecture, list competitors, or score.
    scope check); discovery just finds MORE on top. The user's list is the floor, not the ceiling.
 6. **Dedup, filter, classify.** Merge name variants (Sonar/SonarQube → one), filter against the
    Concept inclusion/exclusion criteria, then classify survivors into 3–5 meaningful categories.
+   **Per-lane health check:** after classifying, look at the count and quality of each category.
+   A lane that comes back THIN (few real candidates) or POLLUTED (mostly consultancies,
+   agencies, or services dressed up as products in the listicles) is not a true \"this category
+   is small\" signal — it usually means the generic enumeration query missed the real product
+   vocabulary for that niche. Fire 1–2 **supplemental targeted** enumeration queries for that
+   lane (still unseeded — built from the niche's concrete sub-capability, e.g. \"Java framework
+   upgrade tools\" / \"COBOL mainframe migration tools\" for a starved modernization lane), then
+   re-mine and re-rank. Do this BEFORE the checkpoint — never hand the user a starved or
+   service-polluted category as if it were the finished set.
 7. ⛳ **Checkpoint 2+3 (rows + columns together):** hand the user the classified candidate list
    AND your recommended comparison dimensions. They prune/add tools and edit/finalize the
    dimensions in one pass. **Confirmed dimensions are locked here, before Teardown.**
@@ -186,12 +265,18 @@ architecture, list competitors, or score.
 > JSON, no shell-escaping traps. Full playbook (request shape, the body-mining + frequency-rank
 > code, fallbacks, and "ratify rows before spending evidence effort" sequencing) →
 > `references/discovery-search-tooling.md`.
-
-### 🗺️ Pattern→Forms
-The differentiator from a plain competitor list: **re-cluster the candidate set along a
-FORM axis**, not by company. Each form must be filled with a **real representative** — if a
-form can't be populated with a real example, delete it (never invent plausible-looking
-forms). Output: a forms table (form | defining trait | representative | maturity).
+>
+> 🌐 **ALWAYS load the `web-access` skill for any web search/fetch — in BOTH Discovery and
+> Teardown.** Call `skill_view(name='web-access')` before searching so you use a guaranteed-available
+> retrieval path (its layered model: static `web_search`/`web_extract`/`curl` + `r.jina.ai` reader →
+> browser layer only if needed). This is not optional polish — it prevents the single worst silent
+> failure of this skill: **running a Teardown with no working web tool at all.** When the Teardown is
+> delegated to subagents, the child often does NOT inherit a usable search tool, so it quietly falls
+> back to training knowledge and returns confident-but-unverified pricing/features. Before trusting
+> any delegated profile, (a) give the child the `web` toolset AND tell it to load `web-access`, and
+> (b) verify the volatile axes (pricing, last-3-month features) carry real source URLs — if they
+> don't, re-fetch those cells yourself from the main session via `web-access` Layer 0 (curl +
+> `r.jina.ai`, processed inside `execute_code` to keep raw HTML out of context).
 
 ### 🔬 Teardown (single object; depth/width tunable)
 Teardown always runs against a **confirmed dimension set** (locked at checkpoint 2+3, before this
@@ -216,47 +301,79 @@ others (that's Compare's job).
 > add your own dimensions and do not skip any — same shape for all objects so Compare can lay
 > them side by side cleanly.
 >
-> **Plus: summarize each object's new features from the last ~3 months.** On top of the fixed
-> dimensions, give each object a short dated list of what it shipped recently (named feature +
-> month + citation). This is collected here in Teardown so Compare can read it as a trend.
+> **Plus (only when the downstream synthesis is Compare/Trends): summarize each object's new
+> features from the last ~3 months.** On top of the fixed dimensions, give each object a short
+> dated list of what it shipped recently (named feature + month + citation). This is collected
+> here in Teardown so Compare can read it as a trend. **Skip it for a Forms flow** — a forms
+> survey of sampled representatives doesn't consume recent-features data, so collecting it there
+> is over-spec.
 >
 > All of this — the dimension profiles AND the recent-features summary — is the prepared input
 > for the next step. Write the prose profile first, then the matrix cell is just its compression.
 
+> 🛰️ **Delegating Teardown to subagents — three guards (each earned the hard way).** Parallel
+> per-object subagents are the right pattern, but a naive dispatch fails silently in two ways:
+> 1. **Budget or you lose everything.** A research subagent with no cap will over-research and hit
+>    the wall (e.g. 600s / 50 calls), and a timed-out child returns **NOTHING** — all its work is
+>    discarded. Give every Teardown child a HARD cap: \"≤N searches, lean on training knowledge for
+>    stable facts, **start writing your answer by minute M** no matter what.\" A complete, slightly
+>    thinner profile beats a perfect one that times out to zero.
+> 2. **Confirm the child actually HAS a web tool before trusting its citations.** A child spun up
+>    without a `web`/search toolset will still cheerfully return full profiles — built entirely from
+>    training knowledge, with invented-looking but unverified pricing and \"recent\" features. Put
+>    `web` in the child's toolset explicitly, and tell it to flag any cell it could not verify
+>    rather than guess. If the summaries come back with every \"recent feature\" hedged as
+>    \"could not verify,\" the tool layer was missing — don't ship those cells as fact.
+> 3. **Verify the VOLATILE axes yourself regardless.** Pricing and last-3-month features are exactly
+>    what training knowledge gets wrong (stale numbers, missed releases). Even when children
+>    \"succeed,\" pull those two rows yourself from primary pages before finalizing — a static fetch
+>    (`curl` + a reader like `r.jina.ai/<url>`, processed inside `execute_code` so raw HTML stays
+>    out of context) is fast and is Layer-0, no login needed. Engine/scope/language/workflow rows
+>    are stable and can ride on synthesis; pricing/recent-features cannot.
+
 ### ⚖️ Compare (consumes Teardown results)
+Compare always outputs **two sections, never a bare table** — a table alone is not a comparison.
+
 1. Object set — from Discovery (checkpoint 2).
 2. Dimension axis — user-ratified (checkpoint 3).
-3. Lay the N teardown results side by side → build the matrix (rows = objects/dimensions,
+3. **Build the matrix.** Lay the N teardown results side by side (rows = objects/dimensions,
    cells = ✅/partial/❌ + a one-line "how": rule/AST/dataflow/LLM/runtime, + evidence).
-4. Read the **pattern** and write a **stance-bearing positioning conclusion** (who's deep,
-   who's shallow, where AI pulls someone ahead). Optionally deep-Teardown the #1 rival while
-   the rest stay dimension-limited.
-Does NOT collect raw data itself — it only arranges what Teardown produced.
+4. **Section 1 — the matrix + a plain-English summary that explains it.** Read the pattern across
+   the matrix and write a summary in plain words that walks the reader through the table: what the
+   rows show, where the real differences are, who's deep, who's shallow, where one player pulls
+   ahead, where two overlap. The reader should understand the table from your summary WITHOUT
+   decoding the cells one by one. This summary is **descriptive, not prescriptive**: it states the
+   differences that fall out of the data, NOT what the user's product should do about them. No
+   bets, no "defensible wedge", no "consume X as a dependency", no recommendations — the skill
+   stops at the objective comparison and the PM draws strategy themselves. "MDASH scans deeper across more
+   languages than Evergreen's security pillar" is allowed (a fact from the table); "so Evergreen
+   should not stake value on security" is NOT (a strategy call).
+5. **Section 2 — recent-3-month trend summary, built from the Teardown recent-features data.**
+   Take the "new features in the last ~3 months" that Teardown collected for each object, put them
+   together, and read them as one picture: what is the whole market adding right now? Where is it
+   heading? A summary of direction, not just a list of releases.
 
-> **Compare = two sections, never a bare table.** A table alone is not a comparison. The
-> Compare step must always produce both of these:
->
-> **Section 1 — Comparison table + a plain-English summary that explains it.** Lay the objects
-> against the confirmed dimensions, then write a clear summary in plain words that walks the
-> reader through the table: what the rows show, where the real differences are, who is strong
-> or weak and why. The reader should understand the table from your summary WITHOUT having to
-> decode the cells one by one.
->
-> **Section 2 — Recent-3-month trend summary, built from the Teardown recent-features data.**
-> Take the "new features in the last ~3 months" that Teardown collected for each object, put
-> them together, and read them as one picture: what is the whole market adding right now? Where
-> is it heading? This is a summary of direction, not just a list of releases.
+Optionally deep-Teardown the #1 rival while the rest stay dimension-limited. Does NOT collect raw
+data itself — it only arranges what Teardown produced.
+
+### 🗺️ Forms (Compare's synthesis sibling — also runs AFTER Teardown)
+Use this **instead of Compare** when the question is "what forms exist", not "who's stronger".
+The capability/pattern you're researching gets productized into several **forms** in the market;
+this lens names them. It consumes the **analyzed** object set (the Teardown profiles) and
+**re-clusters it along a FORM axis**, not by company. Because you tore the objects down first, the
+forms are induced **bottom-up from real mechanics** — not guessed up front and then back-filled. Each form must be
+filled with a **real representative** drawn from the teardowns; if a form can't be populated with
+a real example, delete it (never invent plausible-looking forms). Output: a forms table
+(form | defining trait | representative | maturity). Does NOT score who's best (that's Compare).
+
+> Why Teardown comes first: you can only name the genuine shapes of a market after you understand
+> how each player actually works. Clustering before teardown produces armchair categories;
+> clustering after produces forms grounded in evidence.
 
 ### 📈 Trends (the vertical/time axis)
 What horizontal comparison can't give: how the field is **evolving**. Identify **5–7 named,
 argued trajectories** (not asserted). Cover both "what existing tools are adding now" (cited,
 prefer recent) and "what the shift unlocks that wasn't possible before."
-
-### 🎯 Strategy (always land here)
-Synthesize everything into product input: capability gaps to close, capabilities to add, the
-**defensible wedge** (what rivals are NOT doing), and **3 near-term + 2 long-term bets**. This
-is heavier than a soft "implications" closer — it reaches stance-level recommendations (e.g.
-"don't stake value on Pillar 1; consume the rival as a dependency; handshake with their team").
 
 ---
 
@@ -266,7 +383,12 @@ is heavier than a soft "implications" closer — it reaches stance-level recomme
 - **Example before terminology** — ground a concept with a concrete case *before* naming it.
 - **Evidence grading**: product/feature/stat claims MUST cite a primary source (vendor doc,
   release notes, case study), inline as markdown links. Trends/synthesis may be uncited POV
-  but must be **argued, not asserted**. Prefer primary (vendor doc) over secondary commentary.
+  but must be **argued, not asserted**. Prefer primary (vendor doc) over secondary commentary. This applies to **matrix/table cells**
+  too — link the source ON the verified cell (the pricing row, the recent-feature row). Do NOT
+  defer citations to a footnote or an end "evidence note": parked sources read as verified-looking
+  but unlinked, and footnoting is the easy way to violate the inline rule when the claims live in a
+  dense comparison table (observed: a landscape report shipped pricing + feature cells with sources
+  collected at the bottom instead of linked per cell).
 - **No speculation about unannounced products**; mark rumored/leaked items as such.
 - **Generalizing claims** ("they all share X") must be checked **against each item
   individually** before writing.
@@ -289,8 +411,9 @@ is heavier than a soft "implications" closer — it reaches stance-level recomme
 
 ## Output & Persistence
 
-Land two files in `/mnt/c/Users/taoxu/Downloads/git/nengba-kb/work/research/` (the user's
-actual repo lives under the WSL Windows mount — do NOT use a bare `/Users/...` macOS path):
+Land two files in `~/git/nengba-kb/work/research/` (home-relative — resolves correctly on
+any machine, do NOT hardcode an environment-specific absolute path like `/mnt/c/...` or a
+bare `/Users/...`):
 1. `<topic>.md` — the research body in the user's standard structure.
 2. `<topic>-research-prompt.md` — the plan / dispatch (lenses chosen, dimensions, subagent
    split) for traceability and reuse.
@@ -303,16 +426,54 @@ thin and you relied on synthesis.
 
 ---
 
+## Self-review against this skill (the last step — checkpoint 4)
+
+After persisting, **do not declare done.** Run one final pass: read the finished `.md` back and
+compare it, point by point, against this skill's **Quality Contract**, the active lens specs
+(Compare/Forms/Teardown), and the **Pitfalls** list. The goal is to catch instructions that were
+not well followed *before* the user has to.
+
+1. **Produce a gap list, not a vibe check.** For each requirement, mark ✅ followed or ⚠️ deviated,
+   with a one-line reason and the fix cost. Be specific and honest — name the rule and where the
+   report breaks it. Common misses to check explicitly: inline citations on every pricing/feature/stat
+   claim; acronyms spelled out on first use; per-object prose profile present before each matrix cell;
+   Compare is two sections (table + plain summary, then recent-3-month trend), not a bare table;
+   stayed descriptive, not prescriptive; example-before-terminology.
+2. **Separate clear-cut errors from structural changes.** Fix unambiguous errors immediately (a
+   missing acronym expansion, a dropped citation). For anything structural (adding prose profiles,
+   re-citing every cell, reformatting the matrix), **present the gap list and let the user choose**
+   before editing — this honors the user's "fix only 明确错误 unless more is requested; ask before
+   rewriting structural sections" rule.
+3. ⛳ **Checkpoint 4 — user reviews the gaps, then you fix the chosen ones.** Apply exactly the edits
+   the user approves, then update the dispatch/prompt file's evidence note to reflect what changed
+   (e.g. "pricing now cited inline").
+
+> Why this is its own step: a research report *feels* finished once it's written and saved, so skill
+> deviations (un-cited claims, missing profiles, bare-table Compare) survive silently into the
+> persisted artifact. A forced read-back against the contract is the only reliable catch. This is
+> also where you fold any newly-found process lesson back into the relevant skill via
+> `skill_manage(action='patch')`.
+
+---
+
 ## Worked dispatch examples (lens composition varies every time)
 
 | Question | Lens composition |
 |---|---|
-| "What is evergreen & its relation to modernization" | Concept ● → Concept-relation ● → Strategy ○ (no Discovery, no matrix) |
-| "Agent team productized forms in vertical scenarios" | Concept ○ gate → Discovery ● → Pattern→Forms ● → Teardown ○ (sample reps) → Strategy ○ |
-| "What is MDASH & how it differs from Evergreen" | Teardown ● (MDASH full) → Compare ● → Strategy ● |
-| "Code-assessment products & competitive analysis" | Concept ○ scope → Discovery ● → [Teardown ○×N dimension-limited] → Compare ● → Trends ● → Strategy ● |
+| "What is evergreen & its relation to modernization" | Concept ● → Concept-relation ● (no Discovery, no synthesis step) |
+| "Agent team productized forms in vertical scenarios" | Concept ○ gate → Discovery ● → Teardown ○ (sample reps) → Forms ● → Trends ○ |
+| "What is MDASH & how it differs from Evergreen" | Teardown ● (MDASH full) → Compare ● |
+| "Code-assessment products & competitive analysis" | Concept ○ scope → Discovery ● → Teardown ○×N (dimension-limited) → Compare ● → Trends ● |
 
 No two flows are identical. Step A's whole job is choosing which blocks to light and how heavy.
+
+> 🧪 **Regression test cases:** `references/test-cases.md` holds four real user requests
+> (pure concept · forms · teardown+compare · full discovery→compare), each with its
+> expected flow and MUST / MUST-NOT assertions. **After ANY edit to this SKILL.md or its
+> references, re-check the four cases** — a change that breaks a MUST, enables a MUST-NOT, or
+> silently re-types a subject is a regression. The two edge cases (TC2 non-Compare flow, TC3
+> skip-Discovery flow) specifically guard how the dimension/axis checkpoint behaves when there
+> is no comparison matrix.
 
 ---
 
@@ -329,6 +490,12 @@ No two flows are identical. Step A's whole job is choosing which blocks to light
 - Do NOT treat a search result as a single candidate — listicles are containers of many.
   Read the body / raw_content and harvest every name, or you under-discover by an order of
   magnitude.
+- Do NOT hand the user a THIN or SERVICE-POLLUTED discovery lane as the finished set. A category
+  that returns only a handful of names, or mostly consultancies/agencies instead of products, is
+  usually a missed-vocabulary signal, not a genuinely small market. Fire 1–2 supplemental targeted
+  (still unseeded) enumeration queries for that niche and re-rank BEFORE the checkpoint. (Observed:
+  a modernization lane came back with ~9 names, several of them service firms; two targeted queries
+  on the concrete sub-capabilities surfaced the real product set.)
 - Do NOT scope Discovery to a property LABEL without gating it first. If the market is named
   by a property word ("agentic", "continuous", "self-healing", "managed"), Concept-gate that
   word and bucket candidates into passes / fails / partial BEFORE diverging — especially the
@@ -355,8 +522,28 @@ No two flows are identical. Step A's whole job is choosing which blocks to light
 - Do NOT invent forms/matrix cells that "look plausible" — every form needs a real
   representative, every cell needs evidence, or it gets deleted.
 - Do NOT skip the plan checkpoint — picking the wrong lenses wastes the whole run.
+- Do NOT skip the final self-review (checkpoint 4). A persisted report *feels* done, so un-cited
+  claims, missing per-object profiles, a bare-table Compare, and unexpanded acronyms survive
+  silently into the saved artifact. Read the `.md` back against the Quality Contract + Pitfalls,
+  hand the user a followed/deviated gap list, fix clear-cut errors, and let the user choose on
+  structural ones.
+- Do NOT search or run a Teardown without the `web-access` skill loaded. The worst silent failure
+  is a Teardown with no working web tool — especially a delegated subagent that quietly falls back
+  to training knowledge and returns confident-but-unverified pricing/features. Load `web-access`,
+  give delegated children the `web` toolset, and verify volatile cells carry real source URLs.
 - Do NOT trust subagent Discovery output without checking rows carry real URLs — a
   delegated subagent can return narrated/literal tool-call text instead of executing the
   search. Verify the tool layer (not the network) and fall back to the curl+DDG pipeline
   in `references/discovery-search-tooling.md`.
+- Do NOT dispatch Teardown subagents without a hard budget, a confirmed web toolset, and a
+  self-check of the volatile axes. An uncapped child times out and returns nothing; a child with
+  no web tool returns training-knowledge guesses dressed as fact. Always cap (\"≤N searches, start
+  writing by minute M\"), put `web` in its toolset, and re-verify pricing + last-3-month features
+  yourself from primary pages even when the child \"succeeds.\" See the Teardown lens guards.
+- Do NOT cross from DESCRIPTIVE positioning into PRESCRIPTIVE strategy in Compare. Stating where
+  the differences are, who's strong/weak and why (facts from the table) is required. Telling the
+  user what their product should do about it — bets, "defensible wedge", "consume the rival as a
+  dependency", "don't stake value on X", team handshakes — is not the skill's output. The PM
+  draws the strategy; the skill delivers the objective substrate. This is the easiest rule
+  to violate because a sharp Compare *feels* like it should end with a recommendation. It must not.
 - Do NOT write to nengba-kb without explicit approval.
