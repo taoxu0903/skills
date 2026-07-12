@@ -8,6 +8,14 @@ triggers:
   - user asks how a capability or pattern is productized in the market
   - user asks to clarify a concept and its relationship to adjacent concepts
   - user asks to scope a landscape ("what products do X")
+version: 1.0.0
+author: taoxu
+license: MIT
+platforms: [linux, macos, windows]
+metadata:
+  hermes:
+    tags: [research, product, market, competitive-analysis, teardown, pm]
+    related_skills: [pm-writing-gater, tavily-search, advisory-council]
 ---
 
 # Deep Research — Product / Market / Concept (Composable)
@@ -21,6 +29,20 @@ up and how heavy each one is*.
 > Core principle the user converged on: **the object list is an OUTPUT of research, not
 > an input.** Never assume you already know who to study. If the target set is uncertain,
 > the Discovery lens produces it — and the user ratifies it.
+
+> 🥇 **GOLDEN DATA RULE (settled by Ken — overrides any instinct to the contrary).** For ALL
+> factual data, **never use your own memory or training knowledge — always pull the latest
+> yourself.** This is the default for every fact in every run, not just "fast-moving" topics.
+> 1. **Pull the latest authoritative page, dated.** Fetch the vendor's / maintainer's OWN official
+>    doc or blog. If no official page exists, use the most recent public article instead.
+> 2. **What that page states IS the truth — take it at face value.** Once you've pulled the latest
+>    authoritative page, trust what it says. Do NOT run another round of web searches to re-check
+>    each sub-fact on it one by one. One good authoritative pull settles it. (This still kills the
+>    classic failure: writing "X lacks Y" from memory — pull X's current page and read what it
+>    actually says before any absence claim.)
+> 3. **Only exception: data the user gave you explicitly, up front.** If Ken hands you a provider
+>    list, a dimension list, or any datum before the research, use it as given. Even then, if it
+>    could be stale or incomplete, **ask Ken and double-confirm** before building on it.
 
 ---
 
@@ -71,9 +93,18 @@ expected flows + MUST/MUST-NOT). Re-check it after any structural edit.
 
 ### Editing this skill safely (this file is iterated often — read before you edit)
 
-This is a multi-file skill (`SKILL.md` + `references/test-cases.md` + `references/discovery-search-tooling.md`)
+This is a multi-file skill (`SKILL.md` + `references/test-cases.md` +
+`references/discovery-search-tooling.md` + `references/verification-and-recency.md` +
+`references/competitive-gap-analysis.md`)
 with numbered invariants that other sections cross-reference. Edits here have a habit of leaving
-silent breakage. Four hazards earned the hard way:
+silent breakage. Six hazards earned the hard way:
+
+> Reference file for platform/ecosystem competitive scoping (provider-vs-consumer two-stream split,
+> platform/builder/SDK membership gate, build/host/pre-built altitude, official-registry definition,
+> registry-TYPE taxonomy + discover-don't-recall sweep, ecosystem-maturity decomposition, output-side
+> channel-gateway inventory):
+> `references/platform-ecosystem-scoping.md`. Load it when the subject is an enterprise platform that
+> CONSUMES an ecosystem of primitives (connectors, plugins, MCP servers, channels, models).
 
 1. **Patch against a RAW file read, never against `skill_view` output.** This file is large
    (~28KB). `skill_view` can return an LLM-SUMMARIZED version that silently drops whole items
@@ -96,6 +127,36 @@ silent breakage. Four hazards earned the hard way:
    Finishing the rename in SKILL.md feels done, but stragglers hide in test-cases.md (flow lines,
    MUST bullets, regression sentinels, coverage-map rows). After any rename, grep the whole skill
    directory for the old token and confirm 0 matches before declaring done.
+5. **Reference files drift into topic-overlap — split them by WHEN they're consulted, not by topic.**
+   This skill once grew THREE overlapping gap/verification reference files that repeated the same
+   lessons (disprove-your-gap, catch-up-vs-greenfield, recency) because each was written for one
+   session and named by subject. The fix that stuck: split by TRIGGER-TIME, not topic —
+   `verification-and-recency.md` is ALWAYS-ON (fact-quality: is the datum true / fresh / officially
+   sourced — runs on every live-product run) and `competitive-gap-analysis.md` is CONDITIONAL
+   (judgment-quality: is the conclusion sound — loads ONLY on a gaps / enhancement / confirm-my-
+   conclusion follow-up). Two rules from that cleanup: (a) when a SKILL.md pointer DESCRIBES a
+   reference file, the description must match what's actually always-on vs conditional inside it —
+   mislabeling a partially-always-on file as "gap-only" makes always-on rules (e.g. the recency /
+   primary-source check) read as conditional, which is exactly the bug a user will catch; (b) before
+   adding a new reference file, check whether its content belongs in an existing file under the same
+   trigger-time axis, rather than starting a third near-duplicate.
+6. **When folding a session's lesson in, STRIP the session-specific framing first — keep the
+   principle, drop the artifact.** A lesson learned on one task arrives wrapped in that task's
+   vocabulary (a report's section name, a vendor codename, a doc's structure). The class-level
+   skill must state the lesson in ITS OWN general terms; importing the session's local noun makes
+   the rule read as a narrow special case and the user rejects it. (Observed: the
+   fetch-don't-recall lesson was first written as a rule about "the BASELINE / own-product cell" —
+   "baseline" was THIS report's structure, not a deep-research concept. Ken rejected it: "there is
+   no baseline stuff called out, and I don't want such thing surfaced." The fix: re-state it as
+   "never fill a factual cell from memory, including the object you know best," which is the same
+   lesson with zero session-specific framing.) Test before saving: would this wording make sense to
+   someone who never saw today's task? If it names something only today's task had, generalize it.
+   **And state the rule in its SIMPLEST form — Ken rejects over-engineered multi-clause rules.**
+   (Observed same session: the Golden Data Rule was first written as a 4-clause rule with a
+   "fetch every fact, each one, every time" re-check loop; Ken pushed back — "can you do it in a
+   simple way?" — and the rule that stuck was "pull the latest official page once; what it says is
+   the truth; don't re-check sub-facts one by one." When a settled rule reads heavy, cut it to the
+   one sentence that carries the behavior before saving.)
 
 ### Memory anchors for the 3 lenses that blur together
 - **Concept** plots the **point** on a map (what it means, where it sits).
@@ -126,6 +187,17 @@ review right after Discovery — so the comparison dimensions are always confirm
    *what* to compare on. User edits/finalizes. Presented in the SAME review as checkpoint 2:
    prune/add the tools and finalize the dimensions in one pass. **Locked here, before Teardown** —
    never after, because Teardown is filled against these exact dimensions.
+   **Axis-coverage check before locking (hard guard):** if the user stated the scope as an explicit
+   set of axes (e.g. "compare on (1) visibility, (2) management, (3) cost, (4) observability/alerting"),
+   map every proposed column to one of those axes and confirm each axis has real coverage. An axis that
+   collapses to ONE thin column — or zero — is silent under-scoping: the report will faithfully answer
+   its columns while missing half the question, and the gap surfaces late as "you missed X from my
+   scope." Add columns to cover any thin axis BEFORE locking.
+   **Also ask, in this same review, whether to run the recent-3-month trend round (OPTIONAL).**
+   The dedicated "what shipped in the last 3 months" search pass (see Teardown) is opt-in, not
+   automatic. Once the rows + columns are locked, ask the user a plain yes/no: "Do you also want
+   the recent-3-month trend research?" Run it ONLY if they say yes. Default to NO if they don't ask
+   for it. Never kick off that extra round without this explicit OK.
 4. **After Persist — the self-review gap list.** Read the finished report back against this skill's
    Quality Contract and Pitfalls, hand the user a followed/deviated gap list, and let them choose
    which structural gaps to fix. Details in *Self-review against this skill* near the end. Clear-cut
@@ -177,12 +249,12 @@ Compare aligned.
 | **Concept** (gate) | the topic + any property word | definition + in/out criteria | — |
 | **Discovery** | category map (NOT names) + any user-named tools | a classified, frequency-ranked candidate tool list | — |
 | **Dimensions** | Concept + Discovery results | recommended comparison columns | — |
-| **Review** | candidate list + recommended dimensions | user-edited tools AND locked dimensions | ⛳ 2+3 — rows + columns together |
-| **Teardown** (per tool) | locked tools + locked dimensions | one prose profile per tool (fills the dimensions) + a dated last-3-months feature list | — |
-| **Compare** | all teardown profiles | §1 table + plain summary · §2 recent-3-month trend summary | — |
+| **Review** | candidate list + recommended dimensions | user-edited tools AND locked dimensions + optional-trend-round yes/no | ⛳ 2+3 — rows + columns together, then ask the optional recent-3-month trend question |
+| **Teardown** (per tool) | locked tools + locked dimensions | one prose profile per tool (fills the dimensions); IF trend round opted in, ALSO a dated last-3-months feature list from a SEPARATE pull of the official "What's New"/release-notes page | — |
+| **Compare** | all teardown profiles | §1 table + plain summary (always) · §2 recent-3-month trend summary (only if trend round opted in) | — |
 | **Trends** (optional) | the field + Compare output | 5–7 named market trajectories | — |
 | **Persist** | the finished report | two files in the research folder | ⛳ approval before writing |
-| **Self-review** | the persisted report + this skill | a gap list (followed / deviated), then fixes | ⛳ 4 — user reviews gaps before you fix |
+| **Self-review** | the persisted report + this skill + pm-writing-gater skill | a gap list (mechanical scan + both skills), then fixes | ⛳ 4 — user reviews gaps before you fix |
 
 Lighter flows drop steps (a single-product teardown skips Discovery), but the input→output
 contract per step never changes. Step A decides which rows of this table light up.
@@ -247,7 +319,9 @@ architecture, list competitors, or score.
    service-polluted category as if it were the finished set.
 7. ⛳ **Checkpoint 2+3 (rows + columns together):** hand the user the classified candidate list
    AND your recommended comparison dimensions. They prune/add tools and edit/finalize the
-   dimensions in one pass. **Confirmed dimensions are locked here, before Teardown.**
+   dimensions in one pass. **Confirmed dimensions are locked here, before Teardown.** Once the
+   list + dimensions are locked, **ask the user the optional recent-3-month trend question**
+   (plain yes/no) — run that extra search round only on an explicit yes (see checkpoint 3).
 
 > ⚠️ **Gate any scoping PROPERTY word before diverging.** A sharp Concept gate (clear
 > inclusion/exclusion criteria) improves Discovery precision — it stops divergence from dragging
@@ -260,23 +334,31 @@ architecture, list competitors, or score.
 > action or snapshot, and snapshot-only tools fail a state-property gate. Wrong label = wrong
 > superset = wasted run.
 
-> 🔧 **Retrieval reliability:** Discovery lives or dies on clean rows. Use the **Tavily Search
-> API** (`TAVILY_API_KEY` in `~/.hermes/.env`) via Python `urllib` for batch queries — clean
-> JSON, no shell-escaping traps. Full playbook (request shape, the body-mining + frequency-rank
-> code, fallbacks, and "ratify rows before spending evidence effort" sequencing) →
+> 🔧 **Retrieval reliability:** Discovery lives or dies on clean rows. Use the **Tavily web-access
+> skills** (`tavily-search`, and `tavily-extract` for page bodies) for all queries — load
+> `tavily-search` for the exact `tvly` CLI usage. For batch enumeration, the **Tavily Search API**
+> (`TAVILY_API_KEY` in the Hermes env file) called via Python `urllib` is the clean-JSON path with
+> no shell-escaping traps. Full playbook (request shape, the body-mining + frequency-rank code,
+> fallbacks, and "ratify rows before spending evidence effort" sequencing) →
 > `references/discovery-search-tooling.md`.
 >
-> 🌐 **ALWAYS load the `web-access` skill for any web search/fetch — in BOTH Discovery and
-> Teardown.** Call `skill_view(name='web-access')` before searching so you use a guaranteed-available
-> retrieval path (its layered model: static `web_search`/`web_extract`/`curl` + `r.jina.ai` reader →
-> browser layer only if needed). This is not optional polish — it prevents the single worst silent
+> 🌐 **ALWAYS use the Tavily web-access skills for any web search/fetch — in BOTH Discovery and
+> Teardown.** In THIS user's setup the "web-access" path IS the Tavily skill family; there is NO skill
+> literally named `web-access` here, so do NOT call `skill_view(name='web-access')` (it will fail).
+> Load `tavily-search` (search) and `tavily-extract` (page fetch) — plus `tavily-crawl-map` /
+> `tavily-research` when needed — before searching. The user MANDATES Tavily OVER the built-in
+> `web_search`/`web_extract` tools: use it by default, not as a fallback. The `tavily-search` skill
+> carries exact CLI usage (the `tvly` binary, loading `TAVILY_API_KEY` from the Hermes env file,
+> writing JSON with `-o` then reading it; Python `urllib` fallback if `tvly` is missing). This is not optional polish — it prevents the single worst silent
 > failure of this skill: **running a Teardown with no working web tool at all.** When the Teardown is
 > delegated to subagents, the child often does NOT inherit a usable search tool, so it quietly falls
 > back to training knowledge and returns confident-but-unverified pricing/features. Before trusting
-> any delegated profile, (a) give the child the `web` toolset AND tell it to load `web-access`, and
-> (b) verify the volatile axes (pricing, last-3-month features) carry real source URLs — if they
-> don't, re-fetch those cells yourself from the main session via `web-access` Layer 0 (curl +
-> `r.jina.ai`, processed inside `execute_code` to keep raw HTML out of context).
+> any delegated profile, (a) give the child the `web` toolset AND tell it to use the Tavily
+> web-access skills (`tavily-search` / `tavily-extract`) — NOT a skill literally named `web-access`,
+> which does not exist here — and (b) verify the volatile axes (pricing, last-3-month features) carry
+> real source URLs — if they don't, re-fetch those cells yourself from the main session via a static
+> Layer-0 fetch (`tavily-extract`, or curl + `r.jina.ai/<url>`, processed inside `execute_code` to
+> keep raw HTML out of context).
 
 ### 🔬 Teardown (single object; depth/width tunable)
 Teardown always runs against a **confirmed dimension set** (locked at checkpoint 2+3, before this
@@ -301,15 +383,25 @@ others (that's Compare's job).
 > add your own dimensions and do not skip any — same shape for all objects so Compare can lay
 > them side by side cleanly.
 >
-> **Plus (only when the downstream synthesis is Compare/Trends): summarize each object's new
-> features from the last ~3 months.** On top of the fixed dimensions, give each object a short
-> dated list of what it shipped recently (named feature + month + citation). This is collected
-> here in Teardown so Compare can read it as a trend. **Skip it for a Forms flow** — a forms
-> survey of sampled representatives doesn't consume recent-features data, so collecting it there
-> is over-spec.
+> **Plus (OPTIONAL — only if the user opted in at the checkpoint, and only when the downstream
+> synthesis is Compare/Trends): a DEDICATED second search round for each object's new features from
+> the last 3 months.** This round is OPT-IN: run it ONLY when the user said yes to the recent-3-month
+> trend question at the rows+columns checkpoint. If they didn't opt in, skip this entirely — do not
+> collect it and do not run the extra pull. When it IS on: it's its OWN web pull, separate from the
+> dimension research above — not a side-item you grab in passing. Target the object's **official
+> "What's New" / release-notes / changelog / product-blog page**, and filter to the **last 3
+> months**. Record a short dated list of what it shipped (named feature + month + citation from that
+> page). Why a separate round: "what shipped recently / where is it heading" is a DIFFERENT question
+> than "what does this product do," with a different best source (the What's New page, not the
+> feature docs) — so it earns its own pull. (This does NOT conflict with the Golden Data Rule's "one
+> authoritative pull settles it" — that rule bars re-checking the SAME page's facts twice; this is a
+> fresh pull of a DIFFERENT page answering a DIFFERENT question.) **Skip it for a Forms flow** — a
+> forms survey of sampled representatives doesn't consume recent-features data, so collecting it
+> there is over-spec.
 >
-> All of this — the dimension profiles AND the recent-features summary — is the prepared input
-> for the next step. Write the prose profile first, then the matrix cell is just its compression.
+> All of this — the dimension profiles AND (if opted in) the recent-features summary — is the
+> prepared input for the next step. Write the prose profile first, then the matrix cell is just its
+> compression.
 
 > 🛰️ **Delegating Teardown to subagents — three guards (each earned the hard way).** Parallel
 > per-object subagents are the right pattern, but a naive dispatch fails silently in two ways:
@@ -317,7 +409,7 @@ others (that's Compare's job).
 >    the wall (e.g. 600s / 50 calls), and a timed-out child returns **NOTHING** — all its work is
 >    discarded. Give every Teardown child a HARD cap: \"≤N searches, lean on training knowledge for
 >    stable facts, **start writing your answer by minute M** no matter what.\" A complete, slightly
->    thinner profile beats a perfect one that times out to zero.
+A complete, slightly thinner profile beats a perfect one that times out to zero. **But a search-COUNT cap is not enough by itself** — it limits how MANY searches the child runs, not how LONG any one fetch can hang, and a single stuck network call still times the whole child out to zero (observed: a properly-capped child died at the 600s wall with only 10 calls done). Two more mitigations are mandatory on a live-web Teardown: (a) tell the child to wrap EVERY network command in a shell wall-clock timeout — `timeout 45 tvly … ; echo EXIT=$?` — and skip that source on `EXIT=124` instead of retrying; (b) split a heavy aspect into INDEPENDENT parallel children (one per sub-list / lane), so one hang costs a single lane, not the whole aspect. **Two-strikes rule:** if a delegated task times out twice, stop delegating it — run it yourself in the main session with per-call `timeout`s and an overall wall-clock cap (e.g. paginate the source's own JSON API directly, breaking at ~70s), which also lets you fold in the volatile-axis check from guard #3.
 > 2. **Confirm the child actually HAS a web tool before trusting its citations.** A child spun up
 >    without a `web`/search toolset will still cheerfully return full profiles — built entirely from
 >    training knowledge, with invented-looking but unverified pricing and \"recent\" features. Put
@@ -332,7 +424,9 @@ others (that's Compare's job).
 >    are stable and can ride on synthesis; pricing/recent-features cannot.
 
 ### ⚖️ Compare (consumes Teardown results)
-Compare always outputs **two sections, never a bare table** — a table alone is not a comparison.
+Compare outputs **Section 1 (table + plain summary) always — never a bare table**, plus **Section 2
+(recent-3-month trend) ONLY when the user opted into the trend round** at the checkpoint. A table
+alone is not a comparison; Section 1 is mandatory, Section 2 is opt-in.
 
 1. Object set — from Discovery (checkpoint 2).
 2. Dimension axis — user-ratified (checkpoint 3).
@@ -348,10 +442,13 @@ Compare always outputs **two sections, never a bare table** — a table alone is
    stops at the objective comparison and the PM draws strategy themselves. "MDASH scans deeper across more
    languages than Evergreen's security pillar" is allowed (a fact from the table); "so Evergreen
    should not stake value on security" is NOT (a strategy call).
-5. **Section 2 — recent-3-month trend summary, built from the Teardown recent-features data.**
-   Take the "new features in the last ~3 months" that Teardown collected for each object, put them
-   together, and read them as one picture: what is the whole market adding right now? Where is it
-   heading? A summary of direction, not just a list of releases.
+5. **Section 2 — recent-3-month trend summary (OPTIONAL — only if the user opted in).** Include
+   this section ONLY when the recent-3-month trend round was approved at the checkpoint and the
+   Teardown actually collected the recent-features data. If the user did not opt in, **Compare is
+   just Section 1** — omit Section 2 entirely, don't apologize for it or fill it from memory. When
+   it IS on: take the "new features in the last 3 months" that Teardown collected for each object,
+   put them together, and read them as one picture — what is the whole market adding right now?
+   Where is it heading? A summary of direction, not just a list of releases.
 
 Optionally deep-Teardown the #1 rival while the rest stay dimension-limited. Does NOT collect raw
 data itself — it only arranges what Teardown produced.
@@ -383,12 +480,48 @@ prefer recent) and "what the shift unlocks that wasn't possible before."
 - **Example before terminology** — ground a concept with a concrete case *before* naming it.
 - **Evidence grading**: product/feature/stat claims MUST cite a primary source (vendor doc,
   release notes, case study), inline as markdown links. Trends/synthesis may be uncited POV
-  but must be **argued, not asserted**. Prefer primary (vendor doc) over secondary commentary. This applies to **matrix/table cells**
-  too — link the source ON the verified cell (the pricing row, the recent-feature row). Do NOT
-  defer citations to a footnote or an end "evidence note": parked sources read as verified-looking
-  but unlinked, and footnoting is the easy way to violate the inline rule when the claims live in a
-  dense comparison table (observed: a landscape report shipped pricing + feature cells with sources
-  collected at the bottom instead of linked per cell).
+  but must be **argued, not asserted**. This applies to **matrix/table cells** too — link the
+  source ON the verified cell (the pricing row, the recent-feature row). Do NOT defer citations
+  to a footnote or an end "evidence note": parked sources read as verified-looking but unlinked
+  (observed: a landscape report shipped pricing + feature cells with sources collected at the
+  bottom instead of linked per cell).
+- **Truth contract — every fact must be REAL, not hallucinated or weakly sourced (always on).**
+  A smooth report built on made-up or stale facts is the worst failure this skill has. For every
+  factual claim, run these five by default:
+  1. **Official source first.** Get the fact from the vendor's / maintainer's OWN page (doc,
+     release notes, status page). Reach for blogs, analysts, or news ONLY when the official page
+     doesn't cover what you need — and say so when you do.
+  2. **Copy the real line, don't paraphrase from memory.** For each key fact, quote the exact
+     sentence from the source and keep it (in the dispatch file or beside the cell). You cannot
+     fabricate a quote you actually copied; if you can't find a real line to copy, treat the fact
+     as unconfirmed, not true.
+  3. **Two independent sources for fast-moving facts.** "GA vs preview", prices, "just launched",
+     headline numbers — require one OFFICIAL page, or two independent sources that agree. One blog
+     alone is never enough for a volatile fact.
+  4. **Disprove absence claims before writing them.** Any "X lacks Y" / "only Z does this" is the
+     highest-risk kind of claim. Before writing it, search hard for evidence it is FALSE, using the
+     vendor's own vocabulary; it survives only if a primary source confirms absence. Expect to
+     retract ~half your first-draft gaps.
+  5. **Tag each key fact with source type + date.** Note official / secondary / inferred and the
+     source's date, so weak or stale facts can't hide among solid ones.
+  These five are always on. **Per the Golden Data Rule (top of file), the fetch-fresh-and-date-it
+  default applies to EVERY fact in every run — not just "fast-moving" ones.** The extra
+  live-product mechanics (read the vendor page's "last updated" date, confirm
+  general-availability-vs-preview against the official page, prefer the freshest authoritative
+  source) matter most where status flips month to month — `references/verification-and-recency.md`
+  §1 carries them. The gap-specific passes in that file
+  (disprove-your-own-gap, catch-up vs greenfield, descriptive→prescriptive) fire ONLY when the user
+  asks a gaps/enhancement follow-up — they are not part of a normal run. For a report going to
+  senior / external readers, also keep a **proof sheet** (a table: claim → source
+  link → date → exact quote → checked yes/no) as the dispatch companion.
+- **Freshness — pull the latest-dated information.** Every fact should come from the most recent
+  source available; prefer recency-filtered search (Tavily `--time-range month`) and the vendor's
+  current page over older write-ups. Note the date on time-sensitive facts so the report reflects
+  today, not last year. Re-confirm renamed products (vendors rename often).
+- **Delegated research returns a link + the exact quote per fact, or you re-verify it.**
+  Subagents are the biggest source of confident-but-fabricated facts (they fall back on training
+  knowledge). Require every returned fact to carry a real source URL AND the copied sentence; any
+  fact that comes back without both, re-fetch yourself before it enters the report.
 - **No speculation about unannounced products**; mark rumored/leaked items as such.
 - **Generalizing claims** ("they all share X") must be checked **against each item
   individually** before writing.
@@ -401,58 +534,137 @@ prefer recent) and "what the shift unlocks that wasn't possible before."
   user reviews your work, walk them through it in plain words, not a compressed technical wall.
 - **Tables for comparison, prose for analysis.** Active voice, concise, no filler conclusions.
 - **No explicit level labels** in prose; say "machine learning"/"deep learning" etc. directly.
-- **Full names, not abbreviations or short forms.** Spell terms out: "dependencies" not "deps",
-  "GitHub Advanced Security" not "GHAS", "Software Composition Analysis" not "SCA" on first use,
-  "Static Application Security Testing" not "SAST" on first use. Acronyms may follow in
-  parentheses on first mention and be reused, but never coin informal shortenings. Matrix cells
-  and prose alike — clarity over compression. A reader should never have to decode a stub.
+- **Abbreviations: spell out on FIRST use, short form after, plus a glossary at the end.**
+  Spell each term out the first time it appears, with the short form in parentheses — "Software
+  Composition Analysis (SCA)", "GitHub Advanced Security (GHAS)" — then use the short form freely
+  for the rest of the doc, including matrix cells. Do NOT spell the full name out everywhere (it
+  clutters a dense report). Instead, add a **Glossary** section as the LAST section of the doc
+  listing every short form used, each with its full name (and a few words of meaning if helpful).
+  Two rules keep this honest: (1) every short form that appears in the body must have a glossary
+  entry; (2) a short form used ONLY inside a matrix cell (where there's no room for a first-use
+  spell-out) still needs its glossary entry. Never coin informal shortenings ("deps") — only real,
+  recognized acronyms.
 
 ---
+
+## Planning a multi-module research PROGRAM (when the run is a whole section, not one question)
+
+Sometimes the request is not one research question but a **program** — several sub-modules to be
+done in a fixed window (e.g. "research section 2.1 + 2.2 in 5 working days"). Plan it bottom-up,
+not as a flat task list. Five rules that the user (Ken) explicitly ratified:
+
+1. **Layer the work fundamental → upper, and ORDER it.** L0 foundation → L1 discovery →
+   L2 lock columns ⛳ → L3 audit → L4 synthesis → L5 self-review. Each layer is a prerequisite
+   for the next; never present an unordered task list. The matrix columns are an OUTPUT of L0+L1,
+   locked before any cell is filled.
+2. **The L0 deliverable is a ratifiable SCOPE BOUNDARY, not "understand the primitives."**
+   Primitive mechanism notes are supporting work; the core L0 output is a crisp **is / is-not**
+   table — especially the borders with DEFERRED modules (e.g. "the pipe/connector is in scope,
+   the knowledge store + retrieval logic is the deferred memory module"; "the channel is in scope,
+   the cross-agent coordination logic is the deferred orchestration module"). Getting this line
+   wrong makes every downstream cell inherit the wrong shape — Day 1 is the highest-leverage day.
+3. **Split anything needing OTHER PEOPLE into a separate DEPENDENCY TRACK.** Internal-team
+   alignment, telemetry pulls, customer interviews, gated-product trials do NOT sit on the
+   self-driven critical path. The desk track ships a complete v1 without them; dependencies
+   *upgrade specific cells* when answers land. Fire every dependency request on Day 1. Tag each
+   `DEP-x` with who/unblocks-what/5-day-fallback. This list may run past the window — that's fine.
+4. **Grade deliverables public-v1 vs AUTHORITATIVE.** "Authoritative" is a **source grade, not a
+   writing-quality grade**: v1 = built from public evidence (the own-product coverage cells are
+   best-read-from-public-docs); authoritative = those cells confirmed by an internal source. The
+   dependency track swaps v1 → authoritative for specific cells later.
+5. **Order sub-threads inside a module fundamental → frontier too.** e.g. inside an input module:
+   traditional connectors (established) → MCP (new standard on top) → Computer-Use (frontier);
+   inside output: established channels/gateways → proactive/event patterns → regional coverage.
+   The frontier thread is also your compression valve if the window runs tight.
+
+> 🧩 **Capability-audit framing helper:** when the program audits an agent PLATFORM's capabilities
+> (connectors, tools, channels, MCP, I/O), load `references/platform-capability-research.md`. It
+> carries the **3 consumption surfaces** lens (build-direct / build-from-templates / buy-ready —
+> the same primitive at three altitudes, with a different gap-test per surface), connector anatomy,
+> the connector-vs-MCP content-vs-packaging distinction, and a primary-sourced "two doors, two camps"
+> market map. It ALSO carries two rules that govern HOW the audit is recorded: the **strict connector
+> definition** (a connector = a pre-built named-app integration in a catalog; NOT a plugin, MCP server,
+> or custom-API wrap — don't over-broaden the IN-2 cell) and the **deliverable shape** (concrete
+> per-cell capability + mechanism, NOT a ✅/partial/❌ mark matrix, and drop per-cell GA/preview tags —
+> a user rejected marks as "useless"; use a per-provider dimension list when the matrix won't fit). Two reusable conclusions: MCP has won as the INTEROP standard universally, but the real
+> differentiator is the GOVERNED CATALOG underneath it — and "buy-ready vertical agent" design is a
+> VERTICAL-research question, not a capability one (carve it out of a capability audit's scope line).
+> It also carries the **"Top-N connectors is a demand-intersection, never a catalog rank"** method
+> (frequency-rank across vendor popularity lists + the MCP category-demand signal + consumer-audit
+> exposure — never gather and rank the full 9,000-item catalogs).
+>
+> 🛠️ **When a registry/marketplace count or grade is JavaScript-rendered** (a static fetch returns
+> the page shell without the number), load `references/javascript-rendered-data-extraction.md`. It
+> carries the extraction ladder (public JSON API → the site's own aggregate/`/attributes` page →
+> browser-DOM facet counts → the per-detail-page embedded data blob), the bounded-concurrent
+> ThreadPoolExecutor census pattern for sampling per-item data at scale from the main session, and
+> the coverage-before-distribution rule (report what FRACTION is graded before reporting the grade
+> distribution — registries grade only a vetted minority).
 
 ## Output & Persistence
 
 Land two files in `~/git/nengba-kb/work/research/` (home-relative — resolves correctly on
 any machine, do NOT hardcode an environment-specific absolute path like `/mnt/c/...` or a
 bare `/Users/...`):
-1. `<topic>.md` — the research body in the user's standard structure.
+1. `<topic>.md` — the research body in the user's standard structure, ending with a **Glossary**
+   section that lists every short form used with its full name.
 2. `<topic>-research-prompt.md` — the plan / dispatch (lenses chosen, dimensions, subagent
-   split) for traceability and reuse.
+   split) for traceability and reuse. For senior/external-bound reports, include the **proof
+   sheet** here (claim → source link → date → exact quote → checked).
 
 > ⚠️ **Always ask the user for approval before writing to the knowledge base** — never
 > write directly. This is a hard user rule for `nengba-kb`.
 
 When done, report: (a) file path, (b) a 5-bullet TLDR, (c) any section where evidence was
-thin and you relied on synthesis.
+thin and you relied on synthesis (with its source grade), and (d) confirmation that the
+self-review (checkpoint 4) ran, with its gap list.
 
 ---
 
 ## Self-review against this skill (the last step — checkpoint 4)
 
-After persisting, **do not declare done.** Run one final pass: read the finished `.md` back and
-compare it, point by point, against this skill's **Quality Contract**, the active lens specs
-(Compare/Forms/Teardown), and the **Pitfalls** list. The goal is to catch instructions that were
-not well followed *before* the user has to.
+After persisting, **do not declare done.** This step is mandatory and produces a written gap list
+as its output — you cannot skip it, because the gap list IS the deliverable of this step. It has
+two parts. Run BOTH.
 
-1. **Produce a gap list, not a vibe check.** For each requirement, mark ✅ followed or ⚠️ deviated,
-   with a one-line reason and the fix cost. Be specific and honest — name the rule and where the
-   report breaks it. Common misses to check explicitly: inline citations on every pricing/feature/stat
-   claim; acronyms spelled out on first use; per-object prose profile present before each matrix cell;
-   Compare is two sections (table + plain summary, then recent-3-month trend), not a bare table;
-   stayed descriptive, not prescriptive; example-before-terminology.
-2. **Separate clear-cut errors from structural changes.** Fix unambiguous errors immediately (a
-   missing acronym expansion, a dropped citation). For anything structural (adding prose profiles,
-   re-citing every cell, reformatting the matrix), **present the gap list and let the user choose**
-   before editing — this honors the user's "fix only 明确错误 unless more is requested; ask before
-   rewriting structural sections" rule.
-3. ⛳ **Checkpoint 4 — user reviews the gaps, then you fix the chosen ones.** Apply exactly the edits
-   the user approves, then update the dispatch/prompt file's evidence note to reflect what changed
-   (e.g. "pricing now cited inline").
+### Part 1 — review against THIS skill's rules
+Read the finished `.md` back and compare it, point by point, against this skill's **Quality
+Contract**, the active lens specs (Compare / Forms / Teardown), and the **Pitfalls** list. Mark
+each requirement ✅ followed or ⚠️ deviated, with a one-line reason and the fix cost. Be specific —
+name the rule and where the report breaks it.
+
+Run a **mechanical pass first** (a short `execute_code` scan) for the checks that keep slipping
+through a prose read-back — these have escaped TWICE now, so automate them:
+- inline source link inside every volatile / headline matrix cell (count links in matrix rows; the headline-trend and GA-vs-preview cells must be > 0)
+- every short form used in the body has a Glossary entry (extract capitalized short forms, diff against the glossary list)
+- the doc HAS a Glossary section as its last section
+- number of per-object prose profiles == number of objects (no floating cells)
+- Compare has the section(s) it should: always §1 (table + plain summary); §2 recent-3-month trend ONLY if the user opted into the trend round (if they didn't, a one-section Compare is correct — don't flag it)
+- every key fact carries a source tag/date (truth contract); absence claims went through a disprove pass
+Then do the judgement checks by reading: descriptive-not-prescriptive, example-before-terminology,
+freshness (latest-dated sources), generalizing claims verified per-item.
+
+### Part 2 — review against the pm-writing-gater skill
+Load the **pm-writing-gater** skill (`skill_view(name='pm-writing-gater')`) and run its Stage-1 (content) Review
+Checklist against the report: correctness above elegance, concept-grounding before terminology,
+the post-write factual pass, audience-calibrated depth, scope discipline. This catches readability
+and correctness issues the research-specific checks above don't cover. Fold its findings into the
+same gap list.
+
+### Then: fix, with the user in the loop
+1. **Separate clear-cut errors from structural changes.** Fix unambiguous errors immediately (a
+   missing glossary entry, a dropped citation, a stale date). For anything structural (adding prose
+   profiles, re-citing every cell, reformatting the matrix), **present the gap list and let the
+   user choose** before editing — honoring the user's "fix only clear-cut errors unless more is
+   requested; ask before rewriting structural sections" rule.
+2. ⛳ **Checkpoint 4 — user reviews the gaps, then you fix the chosen ones.** Apply exactly the edits
+   the user approves, then update the dispatch/prompt file's evidence note to reflect what changed.
 
 > Why this is its own step: a research report *feels* finished once it's written and saved, so skill
-> deviations (un-cited claims, missing profiles, bare-table Compare) survive silently into the
-> persisted artifact. A forced read-back against the contract is the only reliable catch. This is
-> also where you fold any newly-found process lesson back into the relevant skill via
-> `skill_manage(action='patch')`.
+> deviations (un-cited claims, missing profiles, a bare-table Compare, a missing glossary) survive
+> silently into the persisted artifact. The mechanical pass + the pm-writing-gater pass are the only
+> reliable catch — a prose read-back alone has missed these twice. This is also where you fold any
+> newly-found process lesson back into the relevant skill via `skill_manage(action='patch')`.
 
 ---
 
@@ -481,6 +693,15 @@ No two flows are identical. Step A's whole job is choosing which blocks to light
 
 - Do NOT assume the object list — for capability/domain questions it must be *produced* by
   Discovery and ratified by the user, never presented as a given.
+- Do NOT treat the Concept gate for a capability-domain audit as merely "learn the primitives."
+  The CORE foundational deliverable is an explicit, user-ratifiable scope-boundary (is / is-not)
+  table — and its hardest, highest-value rows are the BORDER CALLS against adjacent or DEFERRED
+  modules (e.g. "the connector / ingestion PIPE is in the input module, but the knowledge store +
+  retrieval logic is the deferred memory module"; "the channel / protocol is output, but the
+  coordination logic is the deferred orchestration module"). Draw and ratify these border calls
+  BEFORE auditing — an audit built on an unratified boundary silently mis-scopes every downstream
+  cell, and the user catches it late as "you audited the wrong thing." Understanding the primitives
+  is supporting work in service of the boundary, not the deliverable itself.
 - Do NOT SEED discovery queries with vendor names you already know — that is confirmation,
   not discovery, and it silently hides whole categories. Map the category space, run one
   unseeded enumeration query per category, mine result BODIES (not titles), frequency-rank.
@@ -505,32 +726,51 @@ No two flows are identical. Step A's whole job is choosing which blocks to light
   Compare only arranges Teardown results.
 - Do NOT ship a teardown that is a row of generic verb-cells. Each object needs a 3–5
   sentence prose profile that strictly follows the user-confirmed dimensions (same shape for
-  every object), plus a short dated summary of its new features from the last ~3 months,
-  BEFORE it becomes a matrix cell. No floating cells.
-- Do NOT ship a Compare that is a bare table. It must have two sections: (1) the comparison
-  table with a plain-English summary that explains it so the reader gets it without decoding
-  cells, and (2) a recent-3-month trend summary built from the Teardown recent-features data.
-- Do NOT use abbreviations or coin short forms ("deps", "GHAS", bare "SCA"/"SAST" on first
-  use). Spell terms out; acronym in parentheses on first mention, then reuse. Applies to
-  matrix cells too.
-- Do NOT silently pick the comparison dimensions — that's the user's call, confirmed at
-  checkpoint 2+3 (shown together with the candidate tool list, right after Discovery, BEFORE
-  Teardown). Offer a recommended axis; let them edit/add/drop (this is also where business vs
-  technical scope is set). Teardown never starts without the locked dimension set.
+  every object). IF the user opted into the recent-3-month trend round at the checkpoint, ALSO add
+  a short dated summary of its new features from the last 3 months, pulled in a SEPARATE search
+  round against the object's official "What's New"/release-notes page (not grabbed in passing
+  during the dimension research). If they did not opt in, skip the recent-features summary. Write
+  the profile BEFORE it becomes a matrix cell. No floating cells.
+- Do NOT ship a Compare that is a bare table. It always needs (1) the comparison table with a
+  plain-English summary that explains it so the reader gets it without decoding cells. (2) The
+  recent-3-month trend summary is added ONLY when the user opted into the trend round — otherwise
+  Compare is just Section 1. Do NOT run the extra trend search, or invent a trend section from
+  memory, when the user didn't ask for it.
+- Do NOT spell every full name out everywhere, and do NOT coin informal short forms ("deps").
+  Spell each real acronym out on FIRST use with the short form in parentheses, use the short form
+  after (matrix cells included), and add a Glossary section at the END listing every short form
+  with its full name. Every short form in the body — including matrix-cell-only ones — needs a
+  glossary entry.
+- Do NOT lock comparison dimensions without an axis-coverage check when the user named the scope as
+  explicit axes. Map each column to a stated axis; an axis covered by only one thin column (or none)
+  is silent under-scoping. The report answers its columns but misses half the question, and the user
+  catches it late ("you missed the alerting axis"). Fix coverage BEFORE locking, not after the report
+  ships. (Observed: a token-feature comparison locked 9 columns that loaded 7 onto two axes — visibility
+  and cost — and left management and observability/alerting with one column each; the entire
+  alerting/budgets dimension was absent until the user flagged it.)
 - Do NOT deep-teardown all N competitors — that drowns you. Dimension-limited teardown for
   all, full teardown only for the #1 rival if needed.
 - Do NOT invent forms/matrix cells that "look plausible" — every form needs a real
   representative, every cell needs evidence, or it gets deleted.
 - Do NOT skip the plan checkpoint — picking the wrong lenses wastes the whole run.
-- Do NOT skip the final self-review (checkpoint 4). A persisted report *feels* done, so un-cited
-  claims, missing per-object profiles, a bare-table Compare, and unexpanded acronyms survive
-  silently into the saved artifact. Read the `.md` back against the Quality Contract + Pitfalls,
-  hand the user a followed/deviated gap list, fix clear-cut errors, and let the user choose on
-  structural ones.
-- Do NOT search or run a Teardown without the `web-access` skill loaded. The worst silent failure
-  is a Teardown with no working web tool — especially a delegated subagent that quietly falls back
-  to training knowledge and returns confident-but-unverified pricing/features. Load `web-access`,
-  give delegated children the `web` toolset, and verify volatile cells carry real source URLs.
+- Do NOT skip the final self-review (checkpoint 4), and do NOT run it as a prose-only read-back —
+  that has missed un-cited cells and unexplained short forms twice. Run BOTH parts: Part 1 (this
+  skill's rules, with a mechanical `execute_code` scan for citations-in-cells, glossary coverage,
+  profile count, two-section Compare) and Part 2 (load the pm-writing-gater skill and run its
+  checklist). Produce a written followed/deviated gap list, fix clear-cut errors, let the user
+  choose on structural ones.
+- Do NOT trust a fact you didn't source to an official page and (for volatile facts) couldn't
+  copy a real line from or corroborate with a second source. Official source first; blogs only
+  when the official page is silent; copy the exact sentence rather than paraphrasing from memory;
+  two independent sources for GA/preview, prices, "just shipped", headline numbers. A smooth
+  report on fabricated or stale facts is the worst failure this skill has. Delegated subagents
+  must return a link + the copied sentence per fact, or you re-verify it yourself.
+- Do NOT search or run a Teardown without the Tavily web-access skills loaded (`tavily-search` for
+  search, `tavily-extract` for fetch). There is NO skill named `web-access` in this user's library —
+  do not try to load that name. The worst silent failure is a Teardown with no working web tool —
+  especially a delegated subagent that quietly falls back to training knowledge and returns
+  confident-but-unverified pricing/features. Use Tavily by default over the built-in web tools, give
+  delegated children the `web` toolset, and verify volatile cells carry real source URLs.
 - Do NOT trust subagent Discovery output without checking rows carry real URLs — a
   delegated subagent can return narrated/literal tool-call text instead of executing the
   search. Verify the tool layer (not the network) and fall back to the curl+DDG pipeline
@@ -540,10 +780,67 @@ No two flows are identical. Step A's whole job is choosing which blocks to light
   no web tool returns training-knowledge guesses dressed as fact. Always cap (\"≤N searches, start
   writing by minute M\"), put `web` in its toolset, and re-verify pricing + last-3-month features
   yourself from primary pages even when the child \"succeeds.\" See the Teardown lens guards.
+- Do NOT assert "Vendor lacks X" in a gap/enhancement analysis without first running a
+  "disprove your own gap" pass — search for evidence the feature ALREADY exists, using the
+  vendor's own vocabulary, and confirm absence against a PRIMARY source. Expect to retract
+  ~half your first-draft gaps. And do NOT trust GA-vs-preview or "shipped" claims from
+  secondary blogs — read the vendor's own dated doc; primary wins on every conflict. Full
+  playbook (recency check, disprove pass, real/closed/greenfield triage, don't-rubber-stamp,
+  doc-family conventions) → `references/verification-and-recency.md`.
 - Do NOT cross from DESCRIPTIVE positioning into PRESCRIPTIVE strategy in Compare. Stating where
   the differences are, who's strong/weak and why (facts from the table) is required. Telling the
   user what their product should do about it — bets, "defensible wedge", "consume the rival as a
   dependency", "don't stake value on X", team handshakes — is not the skill's output. The PM
   draws the strategy; the skill delivers the objective substrate. This is the easiest rule
   to violate because a sharp Compare *feels* like it should end with a recommendation. It must not.
+  **Exception:** an EXPLICIT user follow-up asking for gaps/enhancements makes prescriptive output
+  the requested deliverable — see `references/competitive-gap-analysis.md`.
+- Do NOT assert a competitor LACKS a feature without trying to DISPROVE it first. **This rule applies to EVERY object, not just competitors — including the product the report is built around, or any object you think you know best.** That familiar object is exactly where an absence claim silently skips the disprove search, because certainty suppresses the fetch (see the Golden Data Rule at the top of this file). Absence/negative
+  claims ("X has no Y", "only Foundry does Z") are the highest-risk cells in the report and the ones
+  stale secondary sources get wrong. Before writing a gap: run a search aimed at finding the feature
+  EXISTS, resolve it against a PRIMARY vendor source, and for "GA vs preview / just shipped" read the
+  vendor's own doc page (status flips fast; when a blog and the vendor doc disagree, the doc wins).
+  In the motivating run 3 of 6 claimed gaps were false — the product already had them. Full pattern →
+  `references/competitive-gap-analysis.md`.
+- Do NOT label a missing feature a Foundry-specific gap without checking whether RIVALS have it
+  either. If none do, it's GREENFIELD (a first-mover bet), not a catch-up hole — opposite framing.
+  **But the catch-up-vs-greenfield verdict is itself an absence claim — verify it per-rival against
+  each rival's PRIMARY agent-runtime/quota doc, and source any CORRECTION to a primary page too, not a
+  secondary aggregator or a Tavily synthesized `answer`.** (Observed twice in one session: "per-agent
+  control is greenfield" was wrong — AWS ships it; then the FIX "GCP enforces 30/min per agent" was ALSO
+  wrong — GCP's real limit is 90/min per project/region, not per agent. Decompose coarse capabilities:
+  per-run limits = catch-up vs AWS, per-agent cumulative dollar budget = the real greenfield.)
+  And do NOT list every axis where the vendor trails as a gap to invest in: an axis blocked by a
+  national mandate, a geography/platform you don't own, a different buyer segment, or a business-model
+  choice is a STRUCTURAL NON-GAP — carve it out explicitly as "do not chase," never silently omit it.
+  Triage is three-way (catch-up / greenfield / structural non-gap), not two. When auditing your own
+  conclusion, prefer the defensible "complete / at parity" over the rebuttable "ahead of rivals," and
+  tier your why-invest evidence (a hobbyist-harness signal proves the problem is real, NOT that
+  enterprises will pay). All of these → `references/competitive-gap-analysis.md`.
+- Do NOT protect a prior headline conclusion when the user later adds new dimensions to an
+  already-shipped comparison. A late-added dimension can overturn the original verdict, and the
+  honest move is to rewrite the takeaway + plain summary to match the new picture — never preserve
+  the flattering old story for consistency. (Observed: a platform comparison shipped with "Foundry
+  is the most complete — strong on all 7 aspects." The user then asked to add vertical-sector
+  support, real-time multimodal, and channel distribution as aspects 8–10. On those three Foundry
+  was middle-of-pack, and verticals was the FIRST aspect where it clearly trailed. The takeaway had
+  to flip from "leads everywhere" to "leads the core 1–7, not the leader on 8–10." The user wants
+  the accurate read, not a stable one — re-score every object on the new axes and let the verdict
+  move.) Adding dimensions iteratively is a normal user pattern, not a redo: expect it, and when you
+  propose columns, also surface the out-of-scope axes regional/vertical players compete on (see
+  `references/verification-and-recency.md` §5) so fewer dimensions arrive late.
 - Do NOT write to nengba-kb without explicit approval.
+- **On EVERY run, load `references/verification-and-recency.md`** (always-on fact-quality, per the
+  Golden Data Rule at the top of this file: never use memory, always fetch the latest yourself and
+  date it, vendor official blog/doc is the source of truth, other public articles only when no
+  official page exists, and the sole exception is data the user gave explicitly up front — double-
+  confirm even then). It carries: read the doc's last-updated date, mark general-availability vs
+  preview from the official page, primary beats blogs, re-verify renamed products, copy the real
+  line, propagate a corrected fact across all companion docs + link-check. The live-product
+  mechanics weigh most where status flips monthly, but the fetch-fresh default is universal. When
+  the user then asks a GAP / enhancement
+  / "confirm my conclusion" follow-up, ALSO load `references/competitive-gap-analysis.md` (judgment-
+  quality: disprove your own gap, catch-up vs greenfield vs structural non-gap, present vs future gap,
+  ahead-vs-parity, tier your evidence, complete who-wins evidence per rival, judge don't rubber-stamp,
+  descriptive→prescriptive).
+  Clean split: verification = is the FACT true; gap = is the CONCLUSION sound.

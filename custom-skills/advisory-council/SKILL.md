@@ -1,6 +1,14 @@
 ---
 name: advisory-council
-description: Load when taoxu wants to analyze product decisions, find product direction, evaluate whether to build a feature, or level up from execution thinking to strategic thinking through the lens of real product masters (Marty Cagan, Zhang Xiaolong, Paul Graham). Also used for "let the council argue" — a multi-perspective contrast where the same question is run past several advisors one by one. Advisory council of real product thinkers for 0→1 direction-finding, feature decisions, and strategic thinking. Triggers: advisory council, use the Cagan/Zhang Xiaolong/PG lens, look at a product through a famous thinker's eyes, find product direction, should we build this feature, level up to strategy.
+description: "Load when taoxu wants to analyze product decisions, find product direction, evaluate whether to build a feature, or level up from execution thinking to strategic thinking through the lens of real product masters (Marty Cagan, Zhang Xiaolong, Paul Graham). Also used for \"let the council argue\" — a multi-perspective contrast where the same question is run past several advisors one by one. Advisory council of real product thinkers for 0→1 direction-finding, feature decisions, and strategic thinking. Triggers: advisory council, use the Cagan/Zhang Xiaolong/PG lens, look at a product through a famous thinker's eyes, find product direction, should we build this feature, level up to strategy."
+version: 1.0.0
+author: taoxu
+license: MIT
+platforms: [linux, macos, windows]
+metadata:
+  hermes:
+    tags: [product, strategy, decision-making, advisory, mental-models, pm]
+    related_skills: [deep-research, product-spec-writing]
 ---
 
 # Advisory Council
@@ -15,7 +23,8 @@ The full persona content lives right in this skill's `references/` directory (si
 references/
 ├── marty-cagan.md     ← methodology, discovery vs delivery, avoiding the feature factory
 ├── zhang-xiaolong.md  ← restraint, subtraction, the soul and temperament of a product
-└── paul-graham.md     ← 0→1, make something people want, the unscalable early days
+├── paul-graham.md     ← 0→1, make something people want, the unscalable early days
+└── werner-vogels.md   ← platform & developer ecosystem: primitives-not-frameworks, API-as-forever-contract, emergent usage
 ```
 
 Use `skill_view(name='advisory-council', file_path='references/marty-cagan.md')` to load the corresponding document.
@@ -54,6 +63,7 @@ Be honest with taoxu about the downside: one brain tends to **unconsciously reco
 | **Marty Cagan** | Product methodology, discovery vs delivery, how a PM levels up to strategy | Pokes at whether you're running a "feature factory" — taking orders instead of solving problems |
 | **Zhang Xiaolong** | Whether to build a feature, restraint, the soul of a product | Thinks you're adding too much; asks "will anyone die if we don't build it?" |
 | **Paul Graham** | 0→1, finding direction, what to do early | Asks "does anyone actually want this, or is it an idea you made up?" |
+| **Werner Vogels** | Platform design, developer-ecosystem, API boundaries, what to expose as primitives | Asks "are you handing developers building blocks, or welding the furniture shut for them?" |
 
 ## "Who to Listen To" Quick Reference (taoxu's current situation: AI agent + unclear direction + wants to level up to strategy)
 
@@ -62,6 +72,7 @@ Be honest with taoxu about the downside: one brain tends to **unconsciously reco
 | 0→1, direction unclear | Paul Graham (find direction from your own pain) + Cagan (systematic validation) |
 | Found the core, time to polish | Zhang Xiaolong (restraint, subtraction, guard the soul) |
 | Want to level up from execution to strategy | Cagan (understands users/data/business/industry better than anyone) |
+| Building a PLATFORM (developers build on top): what to expose, where to draw API boundaries | Vogels (primitives-not-frameworks, API-as-forever-contract) — pair with Cagan for the user-problem behind it |
 
 When they clash, **don't split the difference** — see which stage taoxu is in and pick the one to bet on.
 

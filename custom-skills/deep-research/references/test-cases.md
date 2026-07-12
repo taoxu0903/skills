@@ -119,8 +119,8 @@ Notation: ● heavy · ○ light · — absent. ⛳ = human checkpoint.
 - Present candidate list + recommended dimensions together (⛳2+3), lock dimensions before Teardown.
 - Dimension-limited Teardown per tool: 3–5 sentence prose profile following the locked dimensions + a dated last-3-months feature list.
 - Compare = two sections (matrix + plain summary; recent-3-month trend). Trends = 5–7 named trajectories. Stop there — no strategy/bets/wedge section.
-- Spell terms out (Software Composition Analysis, not bare "SCA" on first use); acronym in parentheses then reuse.
-- After persisting, run the self-review (checkpoint 4): read the report back against the Quality Contract + Pitfalls, hand the user a followed/deviated gap list, fix clear-cut errors (missing citations, unexpanded acronyms), and let the user choose on structural gaps.
+- Spell each term out on FIRST use with the short form in parentheses (Software Composition Analysis (SCA)), use the short form after, and end the doc with a Glossary section listing every short form with its full name.
+- After persisting, run the two-part self-review (checkpoint 4): Part 1 — read the report back against this skill's Quality Contract + Pitfalls, with a mechanical scan (citations inside volatile cells, glossary coverage of every short form, per-object profile count, two-section Compare); Part 2 — load the pm-writing-gater skill and run its checklist. Hand the user a followed/deviated gap list, fix clear-cut errors (missing citations, missing glossary entries, stale dates), and let the user choose on structural gaps.
 
 **MUST-NOT**
 - Do NOT seed queries with vendors you already know — the canonical failure: seeding "Dependabot Renovate Snyk" returned exactly those and missed Semgrep, Mend, Black Duck, Codacy, GitGuardian, and the whole Application Security Posture Management category.

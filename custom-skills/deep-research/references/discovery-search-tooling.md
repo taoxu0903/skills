@@ -63,6 +63,19 @@ actually surfaced the tools a seeded run missed. Three mechanical rules:
 > reliable and easier to converge. Reserve subagents for the per-object Teardown step, where
 > each child fills one fixed dimension row.
 
+## Which retrieval skill to load (this Hermes setup)
+
+There is no skill literally named `web-access` here. The working retrieval path is the
+**Tavily skill family** — load `tavily-search` for the exact CLI usage. Two ways to call it,
+both fine:
+- **`tvly` CLI** (preferred for interactive): `export $(grep '^TAVILY_API_KEY=' ~/.hermes/.env
+  | xargs)` then `tvly search "query" --depth advanced --max-results 6 --include-answer advanced
+  --json -o /tmp/out.json` and read the file. Write JSON to a file with `-o` (Unicode can break
+  stdout). Chinese queries work as-is (no CJK splitting).
+- **Direct API via Python `urllib`** inside `execute_code` (preferred for batch / programmatic
+  mining) — the pattern documented below.
+Related skills: `tavily-extract` (fetch full page content), `tavily-crawl-map`, `tavily-research`.
+
 ## Decision order for retrieval (most reliable first)
 
 1. **Tavily Search API** — primary workhorse when a key is available (`TAVILY_API_KEY`,
@@ -94,6 +107,30 @@ actually surfaced the tools a seeded run missed. Three mechanical rules:
    candidate rows return. Use the built-in `retry(fn)` helper around each fetch.
 4. **browser tools** — fallback ONLY when neither API nor curl can reach a JS-gated page.
    Slower, occasional bot detection. Don't make it the default Discovery path.
+
+## Fetching a KNOWN page when the extractor is down (the built-in tools share ONE backend)
+
+The built-in `web_search` and `web_extract` BOTH route through Tavily in this setup, so a backend
+hiccup (observed: HTTP 432 on every call) takes out both at once — and the Tavily skills
+(`tavily-search` / `tavily-extract`) ride the same backend. Switching between them does NOT help;
+they are one path. When you already HAVE the target URL (a doc / article / plain page, not a JS
+app), bypass the extractor and fetch it yourself, then strip HTML → text inside `execute_code` so
+raw markup never enters context:
+```bash
+curl -sL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" --max-time 25 "$URL" \
+  -o /tmp/page.html -w "HTTP %{http_code}, %{size_download} bytes\n"
+```
+```python
+import re, html
+raw  = open("/tmp/page.html", encoding="utf-8", errors="ignore").read()
+m    = re.search(r'<main[^>]*>(.*?)</main>', raw, re.S)          # main content only
+body = re.sub(r'<(script|style|nav|svg)[^>]*>.*?</\1>', '', m.group(1) if m else raw, flags=re.S)
+text = re.sub(r'\n\s*\n+', '\n\n', html.unescape(re.sub(r'<[^>]+>', ' ', body)))
+```
+Useful follow-ons: grep the saved HTML for `href="..."` to discover the CURRENT doc slug when the
+obvious URL is wrong/deprecated, and grep code blocks for exact commands. This is for FETCHING a
+specific known page; to FIND new pages when search is down, use the DDG HTML fallback above. Treat
+it as a fallback RECIPE, never as "Tavily/web_search is broken" — the backend recovers.
 
 ## Pitfalls observed
 

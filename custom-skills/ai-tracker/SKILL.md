@@ -1,22 +1,14 @@
 ---
 name: ai-tracker
-description: >
-  Your go-to skill for anything about what's new, changed, or updated with AI coding agents
-  and AI models. Default agents: OpenClaw, GitHub Copilot, Claude Code, Codex, Cursor, Gemini CLI.
-  Default models: GPT, Claude, Gemini. Use this skill whenever the user:
-  (1) asks what's new, what changed, any updates, latest changes, or recent news about ANY
-  coding agent or AI model — whether by name or generally (e.g., "what's new about Claude Code",
-  "any updates on Cursor", "latest changes to Copilot", "anything new with Codex",
-  "what changed in Gemini CLI", "recent Claude Code updates", "what's new in last 2 days");
-  (2) asks for update roundups, summaries, or overviews across agents or models
-  ("what's the latest with coding agents", "any model releases this week", "give me a roundup");
-  (3) asks about recent AI dev tool trends, ecosystem changes, or industry moves.
-  IMPORTANT: This skill should trigger for ANY prompt asking about new/recent/latest/changed
-  information for a tracked product, even casual or brief questions. It covers the full spectrum
-  from "what's new about X" to formal multi-product roundups.
-  For specific factual questions about a product's current capabilities (e.g., "does Cursor
-  support X?", "what's Claude's context window?"), do NOT use this skill — answer directly
-  using tavily-search or other tools.
+description: "Roundup/changelog tracker for what's new, changed, or updated with AI coding agents and AI models. Default agents: OpenClaw, GitHub Copilot, Claude Code, Codex, Cursor, Gemini CLI. Default models: GPT, Claude, Gemini. Use when the user asks what's new/changed/latest/recent about ANY coding agent or AI model (by name or generally — 'what's new about Claude Code', 'any updates on Cursor', 'latest Copilot changes'), asks for update roundups/summaries across agents or models, or asks about recent AI dev-tool trends and ecosystem moves. Triggers for even brief/casual 'what's new' prompts. Do NOT use for specific capability questions ('does Cursor support X?', 'what's Claude's context window?') — answer those directly with tavily-search."
+version: 1.0.0
+author: taoxu
+license: MIT
+platforms: [linux, macos, windows]
+metadata:
+  hermes:
+    tags: [ai, changelog, roundup, coding-agents, models, research]
+    related_skills: [tavily-search, tavily-extract]
 ---
 
 # AI Tracker
@@ -33,7 +25,8 @@ Two categories: **Coding Agents** and **Models**.
 
 | Product | Aliases | What it is | Official URL |
 |---------|---------|-----------|-------------|
-| OpenClaw | "openclaw", "claw" | Open-source AI coding agent | `https://github.com/openclaw/openclaw/releases` |
+| Hermes Agent | "hermes", "hermes agent" | Nous Research's agent (the one you run) | `https://hermes-agent.nousresearch.com/docs` (check docs/changelog) |
+| OpenClaw | "openclaw", "claw" | Open-source personal AI agent (messaging-channel automation, not primarily a coding agent — track for ecosystem moves) | `https://github.com/openclaw/openclaw/releases` |
 | GitHub Copilot | "copilot", "ghcp" | GitHub's AI coding assistant | `https://github.blog/changelog/label/copilot/` |
 | Claude Code | "claude code", "cc" | Anthropic's CLI-based coding agent | `https://code.claude.com/docs/en/changelog` |
 | Codex | "codex" | OpenAI's coding agent / Codex CLI | `https://developers.openai.com/codex/changelog` |
@@ -71,7 +64,7 @@ Web search is handled by the global tooling — proceed directly to Step 0.
 
 ### Step 0: Clarify Before Executing
 
-**Before doing ANY fetching or research**, confirm the execution plan with the user by asking clarification questions. Parse the user's prompt and present a summary of what you understood, then ask for confirmation or corrections. Use the AskUserQuestion tool with the following questions as applicable:
+**Before doing ANY fetching or research**, confirm the execution plan with the user by asking clarification questions. Parse the user's prompt and present a summary of what you understood, then ask for confirmation or corrections. Use the `clarify` tool with the following questions as applicable:
 
 1. **Scope** — What products/models to check:
    - If the user said nothing specific: confirm "I'll check all default agents and models — is that right, or do you want to narrow it down?"
@@ -115,15 +108,15 @@ If a product/model has no updates in the period, say so. Don't backfill.
 
 #### Step 1: Fetch official sources (all in parallel)
 
-Use **WebFetch** for every default agent and model being checked. Run all fetches **in parallel** — this means one WebFetch call per product URL from the tables above.
+Use **web_extract** for every default agent and model being checked. Batch the fetches (pass multiple URLs, up to 5 per call) — one URL per product from the tables above.
 
 Prompt for agents: "List the most recent releases and announcements with dates, version numbers, and new features. Focus on new features and significant releases only — skip bug fixes and minor improvements."
 
 Prompt for models: "List the most recent model releases, version updates, benchmarks, API changes, context window changes, pricing changes, and deprecations. Include dates and version identifiers."
 
-##### IMPORTANT: GitHub Releases sources need `gh api`, not WebFetch
+##### IMPORTANT: GitHub Releases sources need `gh api`, not web_extract
 
-WebFetch on a GitHub `/releases` page only returns the first page (~10 most recent items), so any release older than ~5 days disappears for active projects like `openclaw/openclaw` and `google-gemini/gemini-cli`. **For any source URL ending in `/releases`, do NOT use WebFetch — use the GitHub REST API via `gh` CLI**:
+web_extract on a GitHub `/releases` page only returns the first page (~10 most recent items), so any release older than ~5 days disappears for active projects like `openclaw/openclaw` and `google-gemini/gemini-cli`. **For any source URL ending in `/releases`, do NOT use web_extract — use the GitHub REST API via `gh` CLI**:
 
 ```bash
 # Get up to 100 most recent releases (handles ~3 weeks of activity for fast-moving repos)
@@ -156,7 +149,7 @@ Prompt: "List all recent articles covering AI coding agents, AI models, GPT, Cla
 
 #### Step 3: Web search for context, custom items, and rationale
 
-Use web search to:
+Use web search (the `tavily-search` skill / `tvly search`, with `--time-range` to scope recency) to:
 1. **Enrich default items** — blog posts, rationale, user reactions
 2. **Fetch custom items** — agents/models not in defaults
 3. **Get comparison context** — analyst commentary
